@@ -1,0 +1,180 @@
+/* Make sure everything uses border-box */
+* {
+  box-sizing: border-box;
+}
+
+/* Whole website fits one screen */
+.page {
+  height: 100vh;          /* exactly one viewport height */
+  max-width: 100vw;       /* avoid horizontal overflow */
+  overflow: hidden;       /* no scroll bars */
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+/* NAVBAR - compact */
+.nav {
+  width: 100%;
+  padding: 12px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  background-color: white;
+}
+
+.nav-left {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.nav-menu {
+  list-style: none;
+  display: flex;
+  gap: 24px;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-menu li {
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.nav-login-btn {
+  padding: 6px 14px;
+  border-radius: 4px;
+  border: 1px solid #000;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* HERO SECTION - centered, smaller */
+.hero {
+  flex: 1; /* take remaining space between navbar and footer */
+  display: flex;
+  padding: 20px 40px;
+  justify-content: space-between;
+  align-items: center; /* vertically center */
+}
+
+/* LEFT SIDE */
+.hero-left {
+  width: 50%;
+}
+
+.hero-left h1 {
+  font-size: 26px;
+  margin-bottom: 8px;
+}
+
+.hero-left p {
+  max-width: 360px;
+  line-height: 1.4;
+  font-size: 13px;
+}
+
+.logged-in-text {
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+/* RIGHT SIDE */
+.hero-right {
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* LOGIN CARD - compact */
+.login-card {
+  width: 280px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.login-title {
+  margin-bottom: 16px;
+  font-size: 18px;
+}
+
+.login-input {
+  width: 100%;
+  margin-bottom: 14px;
+  padding: 8px;
+  border: 1px solid #888;
+  border-radius: 2px;
+  font-size: 13px;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 8px;
+  margin-top: 2px;
+  border: 1px solid #222;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.login-btn:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.login-error {
+  color: red;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.login-switch {
+  margin-top: 10px;
+  text-align: center;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* FOOTER - fixed height so it fits with hero + navbar */
+.footer {
+  height: 80px;
+  padding: 10px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #ddd;
+  background-color: #f8f8f8;
+}
+
+.footer-left {
+  max-width: 200px;
+}
+
+.footer-logo {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.footer-columns {
+  display: flex;
+  gap: 28px;
+}
+
+.footer-columns h4 {
+  margin: 0 0 6px 0;
+  font-size: 13px;
+}
+
+.footer-columns p {
+  margin: 2px 0;
+  font-size: 12px;
+}
