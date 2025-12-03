@@ -1,0 +1,205 @@
+// src/App.js
+import React, { useState, useEffect } from "react";
+import "./App.css";
+import { auth } from "./firebase";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+} from "firebase/auth";
+
+import { useNavigate, Navigate } from 'react-router-dom';
+
+function LoginPage() {
+  const [mode, setMode] = useState("login"); // 'login' or 'register'
+  const [email, setEmail] = useState(""); // username / email
+  const [password, setPassword] = useState("");
+  const [user, setUser] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+
+  // keep user logged in if page refreshes
+  useEffect(() => {
+    console.log("Entering LoginPage");
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser || null);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!email || !password) {
+      setError("Please enter both username/email and password.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+    setLoading(true);
+    if (mode === "register"){
+        try{
+            await createUserWithEmailAndPassword(auth, email, password);
+            setEmail("");
+            setPassword("");
+        } catch(err){
+            const msg =
+            err.code?.replace("auth/", "").replace(/-/g, " ") || err.message;
+            setError(msg);
+        }
+        finally{
+            setLoading(false);
+        }
+    }
+    else{
+        try{
+            await signInWithEmailAndPassword(auth, email, password);
+            setEmail("");
+            setPassword("");
+        } catch(err){
+            const msg =
+            err.code?.replace("auth/", "").replace(/-/g, " ") || err.message;
+            setError(msg);
+        }
+        finally{
+            setLoading(false);
+            navigate("/HomePage");
+        }
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
+
+  return (
+    <div className="page">
+      {/* TOP NAVBAR */}
+      <header className="nav">
+        <div className="nav-left">Website</div>
+        <ul className="nav-menu">
+          <li>Courses</li>
+          <li>About</li>
+          <li>Services</li>
+          <li>Contact</li>
+        </ul>
+        <button className="nav-login-btn">Login / Signup</button>
+      </header>
+
+      {/* MAIN CONTENT */}
+      <main className="hero">
+        {/* LEFT TEXT */}
+        <section className="hero-left">
+          <h1>Welcome</h1>
+          <p>
+            This is the learning platform where students can log in to access
+            personalised content and features.
+          </p>
+
+          {user && (
+            <p className="logged-in-text">
+              You are currently logged in as <strong>{user.email}</strong>.
+            </p>
+          )}
+        </section>
+
+        {/* RIGHT LOGIN BOX */}
+        <section className="hero-right">
+          {!user ? (
+            <div className="login-card">
+              <h2 className="login-title">
+                {mode === "login" ? "Login" : "Register"}
+              </h2>
+
+              <form onSubmit={handleSubmit}>
+                <input
+                  type="text"
+                  className="login-input"
+                  placeholder="Enter your username / email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+
+                <input
+                  type="password"
+                  className="login-input"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+
+                {error && <p className="login-error">⚠ {error}</p>}
+
+                <button
+                  type="submit"
+                  className="login-btn"
+                  disabled={loading}
+                >
+                  {loading
+                    ? "Please wait..."
+                    : mode === "login"
+                    ? "Login"
+                    : "Register"}
+                </button>
+
+                <p
+                  className="login-switch"
+                  onClick={() =>
+                    setMode(mode === "login" ? "register" : "login")
+                  }
+                >
+                  {mode === "login" ? "Register" : "Back to Login"}
+                </p>
+              </form>
+            </div>
+          ) : (
+            <div className="login-card">
+              <h2 className="login-title">Logged in</h2>
+              <p>You are logged in as {user.email}</p>
+              <button className="login-btn" onClick={handleLogout}>
+                Logout
+              </button>
+            </div>
+          )}
+        </section>
+      </main>
+
+      {/* FOOTER */}
+      <footer className="footer">
+        <div className="footer-left">
+          <div className="footer-logo">Website</div>
+          <p>123 Learning Street, Singapore</p>
+        </div>
+        <div className="footer-columns">
+          <div>
+            <h4>About</h4>
+            <p>Company</p>
+            <p>Team</p>
+            <p>Careers</p>
+          </div>
+          <div>
+            <h4>Support</h4>
+            <p>Help Center</p>
+            <p>Contact</p>
+            <p>FAQ</p>
+          </div>
+          <div>
+            <h4>Social</h4>
+            <p>Facebook</p>
+            <p>Instagram</p>
+            <p>LinkedIn</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+export default LoginPage;
