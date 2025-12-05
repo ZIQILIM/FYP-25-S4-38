@@ -13,7 +13,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 function HomePage() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  cost[(studentData, setStudentData)] = useState(null); // store backend data here
+  const [studentData, setStudentData] = useState(null); // store backend data here
 
   useEffect(() => {
     console.log("Entering Homepage");
