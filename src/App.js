@@ -1,6 +1,5 @@
 // src/App.js
-import React, { useState, useEffect } from "react";
-import "./App.css";
+import React from "react";
 import { auth } from "./firebase";
 import {
   createUserWithEmailAndPassword,
@@ -10,15 +9,14 @@ import {
 } from "firebase/auth";
 
 import {
-    BrowserRouter as Router,
+    BrowserRouter,
     Routes,
     Route,
     Navigate,
-    BrowserRouter,
 } from "react-router-dom";
 
-import LoginPage from "./LoginPage";
-import HomePage from "./HomePage";
+import LoginPage from "./components/LoginPage";
+import HomePage from "./components/HomePage";
 
 function App() { 
   return( 
@@ -39,10 +37,6 @@ function App() {
        />
     </Routes>
    </BrowserRouter>
-            
-                
-            
-
   );
 }
 

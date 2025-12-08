@@ -1,7 +1,6 @@
-// src/App.js
 import React, { useState, useEffect } from "react";
-import "./App.css";
-import { auth } from "./firebase";
+import "../CSS/LoginPage.css";
+import { auth } from "../firebase";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -9,7 +8,7 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function LoginPage() {
   const [mode, setMode] = useState("login"); // 'login' or 'register'

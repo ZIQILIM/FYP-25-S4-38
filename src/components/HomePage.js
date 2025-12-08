@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import "./App.css";
-import { auth } from "./firebase";
+import "../CSS/HomePage.css";
+import { auth } from "../firebase";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -13,32 +13,28 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 function HomePage() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  const [studentData, setStudentData] = useState(null); // store backend data here
+  const [studentData, setStudentData] = useState(null);
 
   useEffect(() => {
     console.log("Entering Homepage");
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser || null);
 
-      // if user is logged in, fetch their data from backed
       if (firebaseUser) {
         try {
-          //1. Get the secure Access Token from Firebase
           const token = await firebaseUser.getIdToken();
 
-          //2. Call node.js backend
           const response = await fetch(
             "http://localhost:5000/api/student-profile",
             {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`, // send the token to the backend
+                Authorization: `Bearer ${token}`,
               },
             }
           );
 
-          // 3. save the data
           const data = await response.json();
           setStudentData(data);
         } catch (error) {
@@ -46,6 +42,7 @@ function HomePage() {
         }
       }
     });
+
     return () => unsubscribe();
   }, []);
 
@@ -84,17 +81,9 @@ function HomePage() {
             </p>
           )}
 
-          {/* DISPLAY BACKEND DATA HERE */}
+          {/* DISPLAY BACKEND DATA */}
           {studentData && studentData.gamification && (
-            <div
-              style={{
-                marginTop: "20px",
-                padding: "15px",
-                border: "1px solid #4CAF50",
-                borderRadius: "8px",
-                backgroundColor: "#f9fff9",
-              }}
-            >
+            <div className="progress-box">
               <h3>🎓 Your Progress</h3>
               <p>
                 <strong>Points:</strong> {studentData.gamification.points}
@@ -136,6 +125,7 @@ function HomePage() {
           <div className="footer-logo">Website</div>
           <p>123 Learning Street, Singapore</p>
         </div>
+
         <div className="footer-columns">
           <div>
             <h4>About</h4>
@@ -143,12 +133,14 @@ function HomePage() {
             <p>Team</p>
             <p>Careers</p>
           </div>
+
           <div>
             <h4>Support</h4>
             <p>Help Center</p>
             <p>Contact</p>
             <p>FAQ</p>
           </div>
+
           <div>
             <h4>Social</h4>
             <p>Facebook</p>
