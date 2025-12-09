@@ -125,36 +125,6 @@
   background-color: #f9fff9;
 }
 
-/* RIGHT LOGIN INFO BOX */
-.home-hero-right {
-  width: 50%;
-  display: flex;
-  justify-content: center;
-}
-
-.home-login-card {
-  width: 280px;
-  padding: 20px;
-  background: #fff;
-  border: 1px solid #ccc;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
-
-.home-login-title {
-  margin-bottom: 16px;
-  font-size: 18px;
-}
-
-.home-login-btn {
-  width: 100%;
-  padding: 8px;
-  margin-top: 2px;
-  border: 1px solid #222;
-  background: white;
-  cursor: pointer;
-  font-size: 13px;
-}
-
 /* FOOTER */
 .home-footer {
   height: 100px;
@@ -190,5 +160,10 @@
 .home-footer-columns p {
   margin: 2px 0;
   font-size: 12px;
+}
+
+.home-footer-columns p:hover {
+  color:rgb(61, 187, 61);
+  cursor: pointer;
 }
 

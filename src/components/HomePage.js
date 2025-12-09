@@ -102,21 +102,6 @@ function HomePage() {
             </div>
           )}
         </section>
-
-        {/* RIGHT LOGIN BOX */}
-        <section className="home-hero-right">
-          {!user ? (
-            <div className="home-login-card"></div>
-          ) : (
-            <div className="home-login-card">
-              <h2 className="home-login-title">Logged in</h2>
-              <p>You are logged in as {user.email}</p>
-              <button className="home-login-btn" onClick={handleLogout}>
-                Logout
-              </button>
-            </div>
-          )}
-        </section>
       </main>
 
       {/* FOOTER */}
