@@ -91,7 +91,6 @@ function LoginPage() {
 
   return (
     <div className="page">
-      {/* TOP NAVBAR */}
       <header className="nav">
         <div className="nav-left">Website</div>
         <ul className="nav-menu">
@@ -103,9 +102,7 @@ function LoginPage() {
         <button className="nav-login-btn">Login / Signup</button>
       </header>
 
-      {/* MAIN CONTENT */}
       <main className="hero">
-        {/* LEFT TEXT */}
         <section className="hero-left">
           <h1>Welcome</h1>
           <p>
@@ -120,7 +117,6 @@ function LoginPage() {
           )}
         </section>
 
-        {/* RIGHT LOGIN BOX */}
         <section className="hero-right">
           {!user ? (
             <div className="login-card">
@@ -197,7 +193,6 @@ function LoginPage() {
         </section>
       </main>
 
-      {/* FOOTER */}
       <footer className="footer">
         <div className="footer-left">
           <div className="footer-logo">Website</div>

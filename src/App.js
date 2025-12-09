@@ -17,24 +17,34 @@ import {
 
 import LoginPage from "./components/LoginPage";
 import HomePage from "./components/HomePage";
+import RegisterPage from "./components/RegisterPage";
 
 function App() { 
   return( 
    <BrowserRouter>
     <Routes>
+
       <Route
         exact
-        path="/"
+        path="/LoginPage"
         element={<LoginPage />}
       />
+
       <Route
-        path="/HomePage"
+        path="/"
         element={<HomePage />}
       />
+
+      <Route
+        path="/RegisterPage"
+        element={<RegisterPage />} 
+       />
+
       <Route
         path="*"
         element={<Navigate to="/" />}
        />
+
     </Routes>
    </BrowserRouter>
   );

@@ -53,7 +53,6 @@ function HomePage() {
 
   return (
     <div className="home-page">
-      {/* TOP NAVBAR */}
       <header className="home-nav">
         <div className="home-nav-left">Learning Platform</div>
         <ul className="home-nav-menu">
@@ -65,9 +64,7 @@ function HomePage() {
         <button className="home-nav-login-btn">Login / Signup</button>
       </header>
 
-      {/* MAIN CONTENT */}
       <main className="home-hero">
-        {/* LEFT TEXT */}
         <section className="home-hero-left">
           <h1>Welcome to HomePage</h1>
           <p>
@@ -104,7 +101,6 @@ function HomePage() {
         </section>
       </main>
 
-      {/* FOOTER */}
       <footer className="home-footer">
         <div className="home-footer-left">
           <div className="home-footer-logo">Website</div>
