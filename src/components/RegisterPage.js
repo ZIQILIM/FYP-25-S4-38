@@ -1,14 +1,19 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../CSS/RegisterPage.css";
+import { auth } from "../firebase";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 
 function RegisterPage() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -17,7 +22,24 @@ function RegisterPage() {
       return;
     }
 
-    alert("Account created successfully!");
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      const fullName = `${firstName} ${lastName}`;
+      await updateProfile(userCredential.user, {
+        displayName: fullName,
+      });
+
+      alert("Account created successfully!");
+      navigate("/LoginPage");
+    } catch (err) {
+      const msg = err.code?.replace("auth/","").replace(/-/g,"") || err.message;
+      setError(msg);
+    }
   };
   
   return (
@@ -42,6 +64,8 @@ function RegisterPage() {
                 minLength={2}
                 maxLength={20}
                 required
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
               />
             </div>
 
@@ -54,6 +78,8 @@ function RegisterPage() {
                 minLength={2}
                 maxLength={20}
                 required
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
               />
             </div>
           </div>
@@ -65,6 +91,8 @@ function RegisterPage() {
             placeholder="Enter your email address"
             required
             pattern=".+@.+\.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
 
           <label className="password">Password *</label>

@@ -96,7 +96,7 @@
   font-size: 18px;
 }
 
-.login-input, .register-input {
+.login-input {
   width: 95%;
   margin-bottom: 14px;
   padding: 8px;
@@ -113,6 +113,18 @@
   background: #fff;
   cursor: pointer;
   font-size: 13px;
+}
+
+.login-register-link {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.register-now-link {
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .login-btn:disabled {

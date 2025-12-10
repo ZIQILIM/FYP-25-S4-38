@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from "react";
 import "../CSS/HomePage.css";
 import { auth } from "../firebase";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-} from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function HomePage() {
   const [user, setUser] = useState(null);
-  const navigate = useNavigate();
   const [studentData, setStudentData] = useState(null);
 
   useEffect(() => {
@@ -46,11 +40,6 @@ function HomePage() {
     return () => unsubscribe();
   }, []);
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    navigate("/");
-  };
-
   return (
     <div className="home-page">
       <header className="home-nav">
@@ -61,7 +50,9 @@ function HomePage() {
           <li>Services</li>
           <li>Contact</li>
         </ul>
-        <button className="home-nav-login-btn">Login / Signup</button>
+        <Link to="/LoginPage">
+          <button className="home-nav-login-btn">Login / Signup</button>
+        </Link>
       </header>
 
       <main className="home-hero">
@@ -80,7 +71,7 @@ function HomePage() {
 
           {/* DISPLAY BACKEND DATA */}
           {studentData && studentData.gamification && (
-            <div className="progress-box">
+            <div className="home-progress-box">
               <h3>🎓 Your Progress</h3>
               <p>
                 <strong>Points:</strong> {studentData.gamification.points}
