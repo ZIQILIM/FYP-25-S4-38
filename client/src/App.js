@@ -15,6 +15,7 @@ import {
     Navigate,
 } from "react-router-dom";
 import './CSS/App.css';
+import { AuthProvider } from "./auth/authContext";
 import LoginPage from "./components/LoginPage";
 import HomePage, { NavBar, Footer} from "./components/HomePage";
 import RegisterPage from "./components/RegisterPage";
@@ -22,7 +23,7 @@ import ProfilePage from "./components/ProfilePage";
 
 function App() { 
   return( 
-    <div>
+    <AuthProvider>
       <BrowserRouter>
         <div className="page-layout">
           <NavBar />
@@ -58,7 +59,7 @@ function App() {
           <Footer />
         </div>
       </BrowserRouter>
-   </div>
+    </AuthProvider>
   );
 }
 
