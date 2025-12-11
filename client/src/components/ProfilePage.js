@@ -1,8 +1,39 @@
-import React, { useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
+import { auth } from "../firebase";
+import { AuthContext } from "../auth/authContext";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase";
 import "../CSS/ProfilePage.css";
 
 
+
 function ProfilePage() {
+    const { user } = useContext(AuthContext);
+    const [profileData, setProfileData] = useState(null);
+    console.log("Current User in ProfilePage:", user);
+    useEffect(() => {
+     if (!user) return; 
+
+    const loadProfileData = async () => {
+         console.log("Fetching profile for UID:", user.uid);
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+
+        if (snap.exists()) {
+             console.log("Profile data:", snap.data());
+        setProfileData(snap.data());
+        } else {
+            console.log("No profile found for UID:", user.uid);
+        }
+    };
+    loadProfileData();
+    }, [user]);
+
+    if(!profileData) {
+        return <div>Loading profile...</div>;
+    }
+
+    const displayName = `${profileData.firstName} ${profileData.lastName}`;
     return(
         <div className="profile-Page">
             <div className="profile-container">
@@ -15,8 +46,8 @@ function ProfilePage() {
                     <div className="profile-avatar"></div>
 
                     <div>
-                        <h1 className="profile-name">John Doe</h1>
-                        <p className="profile-role">Student</p>
+                        <h1 className="profile-name">{displayName}</h1>
+                        <p className="profile-role">{profileData.role}</p>
                     </div>
                     </div>
 
