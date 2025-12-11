@@ -1,15 +1,16 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../CSS/LoginPage.css";
 import { auth } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { AuthContext } from "../auth/authContext";
 
-function LoginPage() {
+function LoginPage({onLogin, userData}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
+  // const [loading, setLoading] = useState(false);
+  const { setUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -26,17 +27,23 @@ function LoginPage() {
       return;
     }
 
-    setLoading(true);
+    // setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      // const userLogin = await signInWithEmailAndPassword(auth, email, password);
+      const credentials = await signInWithEmailAndPassword(auth, email, password);
+      const firebaseUser = credentials.user;
+      const token = await firebaseUser.getIdToken();
+      setUser({ uid: firebaseUser.uid, email: firebaseUser.email, token });
+      localStorage.setItem("user", JSON.stringify({ uid: firebaseUser.uid, email: firebaseUser.email }));
       navigate("/HomePage");
     } catch (err) {
       const msg =
         err.code?.replace("auth/", "").replace(/-/g, " ") || err.message;
       setError(msg);
-    } finally {
-      setLoading(false);
     }
+    // } finally {
+    //   setLoading(false);
+    // }
   };
 
   return (
@@ -81,8 +88,11 @@ function LoginPage() {
             </Link>
           </div>
 
-          <button type="submit" className="login-button" disabled={loading}>
+          {/* <button type="submit" className="login-button" disabled={loading}>
             {loading ? "Please wait..." : "Login"}
+          </button> */}
+          <button type="submit" className="login-button">
+            Login
           </button>
         </form>
       </div>
