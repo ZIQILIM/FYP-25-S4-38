@@ -5,60 +5,62 @@ import { onAuthStateChanged } from "firebase/auth";
 
 import { Link } from "react-router-dom";
 
-function NavBar(){
+function NavBar() {
   return (
     <header className="home-nav">
-        <div className="home-nav-left">Learning Platform</div>
-        <ul className="home-nav-menu">
-          <li>Courses</li>
-          <li>About</li>
-          <li>Services</li>
-          <li>Contact</li>
-        </ul>
-        <Link to="/LoginPage">
-          <button className="home-nav-login-btn">Login / Signup</button>
-        </Link>
-      </header>
+      <div className="home-nav-left">Learning Platform</div>
+      <ul className="home-nav-menu">
+        <li>Courses</li>
+        <li>About</li>
+        <li>Services</li>
+        <li>Contact</li>
+      </ul>
+      <Link to="/LoginPage">
+        <button className="home-nav-login-btn">Login / Signup</button>
+      </Link>
+    </header>
   );
-};
+}
 
-function Footer(){
+function Footer() {
   return (
     <footer className="home-footer">
-        <div className="home-footer-left">
-          <div className="home-footer-logo">Website</div>
-          <p>123 Learning Street, Singapore</p>
+      <div className="home-footer-left">
+        <div className="home-footer-logo">Website</div>
+        <p>123 Learning Street, Singapore</p>
+      </div>
+
+      <div className="home-footer-columns">
+        <div>
+          <h4>About</h4>
+          <p>Company</p>
+          <p>Team</p>
+          <p>Careers</p>
         </div>
 
-        <div className="home-footer-columns">
-          <div>
-            <h4>About</h4>
-            <p>Company</p>
-            <p>Team</p>
-            <p>Careers</p>
-          </div>
-
-          <div>
-            <h4>Support</h4>
-            <p>Help Center</p>
-            <p>Contact</p>
-            <p>FAQ</p>
-          </div>
-
-          <div>
-            <h4>Social</h4>
-            <p>Facebook</p>
-            <p>Instagram</p>
-            <p>LinkedIn</p>
-          </div>
+        <div>
+          <h4>Support</h4>
+          <p>Help Center</p>
+          <p>Contact</p>
+          <p>FAQ</p>
         </div>
-      </footer>
+
+        <div>
+          <h4>Social</h4>
+          <p>Facebook</p>
+          <p>Instagram</p>
+          <p>LinkedIn</p>
+        </div>
+      </div>
+    </footer>
   );
-};
+}
 
 function HomePage() {
   const [user, setUser] = useState(null);
   const [studentData, setStudentData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     console.log("Entering Homepage");
@@ -70,7 +72,7 @@ function HomePage() {
           const token = await firebaseUser.getIdToken();
 
           const response = await fetch(
-            "http://localhost:5000/api/student-profile",
+            "http://localhost:5000/api/students/profile",
             {
               method: "GET",
               headers: {
@@ -93,7 +95,6 @@ function HomePage() {
 
   return (
     <div className="home-page">
-      
       <main className="home-hero">
         <section className="home-hero-left">
           <h1>Welcome to HomePage</h1>
@@ -108,6 +109,9 @@ function HomePage() {
             </p>
           )}
 
+          {loading && <p>Loading your profile...</p>}
+          {error && <p style={{ color: "red" }}>⚠️ Error: {error}</p>}
+
           {/* DISPLAY BACKEND DATA */}
           {studentData && studentData.gamification && (
             <div className="home-progress-box">
@@ -120,18 +124,18 @@ function HomePage() {
               </p>
               <p>
                 <strong>Current Streak:</strong>{" "}
-                {studentData.gamification.streak} days 🔥
+                {studentData.gamification.streak} days
               </p>
               <p>
                 <strong>Badges:</strong>{" "}
-                {studentData.gamification.badges.join(", ")}
+                {studentData.gamification.badges.length > 0
+                  ? studentData.gamification.badges.join(", ")
+                  : "No badges yet - keep learning!"}
               </p>
             </div>
           )}
         </section>
       </main>
-
-      
     </div>
   );
 }
