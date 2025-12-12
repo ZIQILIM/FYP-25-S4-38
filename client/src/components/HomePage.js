@@ -13,6 +13,7 @@ function NavBar() {
   const { user } = useContext(AuthContext);
   const [dropDownOpen, setDropdownOpen] = useState(false);
   const [navName, setNavName] = useState("");
+  const [userRole, setUserRole] = useState("");
   const navigate = useNavigate();
 
   const toggleDropdown = () => setDropdownOpen(!dropDownOpen);
@@ -35,6 +36,7 @@ function NavBar() {
 
         if (response.success) {
           setNavName(response.data.firstName);
+          setUserRole(response.data.role);
         }
       } catch (error) {
         console.error("Error fetching navbar details:", error);
@@ -42,11 +44,27 @@ function NavBar() {
     };
     fetchNavDetails();
   }, [user]);
+  // Logic: Where does "Courses" button go?
+  // If Instructor -> /CourseEditorPage
+  // If Student/Other -> /CoursePage (later can rename oso
+  const coursesLink =
+    userRole === "instructor" ? "/CourseEditorPage" : "/CoursePage";
   return (
     <header className="home-nav">
-      <div className="home-nav-left">Learning Platform</div>
+      <div className="home-nav-left">
+        <Link to="/" style={{ textDecoration: "none", color: "white" }}>
+          Learning Platform
+        </Link>
+      </div>
       <ul className="home-nav-menu">
-        <li>Courses</li>
+        <li>
+          <Link
+            to={coursesLink}
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
+            Courses
+          </Link>
+        </li>
         <li>About</li>
         <li>Services</li>
         <li>Contact</li>
