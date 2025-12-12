@@ -21,7 +21,7 @@ class CourseModel {
     }
   }
 
-  async addContent(courseId, contentItem) {
+  async addCourseContent(courseId, contentItem) {
     try {
       const courseRef = this.collection.doc(courseId);
       const courseDoc = await courseRef.get();
