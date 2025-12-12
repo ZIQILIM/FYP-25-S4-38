@@ -52,6 +52,12 @@ function ProfilePage() {
     loadProfile();
   }, [user]);
 
+  // fix for runtime error when user(instructor/admin) logs out from profile page)
+  // If the user logs out, stop rendering immediately to prevent crashing
+  if (!user) {
+    return <div className="profile-page">Redirecting...</div>;
+  }
+
   // 2. Handle Edit Click
   const handleEditClick = () => {
     setEditForm({
