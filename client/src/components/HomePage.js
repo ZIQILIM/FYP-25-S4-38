@@ -13,6 +13,7 @@ function NavBar() {
   const { user } = useContext(AuthContext);
   const [dropDownOpen, setDropdownOpen] = useState(false);
   const [navName, setNavName] = useState("");
+  const [userRole, setUserRole] = useState("");
   const navigate = useNavigate();
 
   const toggleDropdown = () => setDropdownOpen(!dropDownOpen);
@@ -35,6 +36,7 @@ function NavBar() {
 
         if (response.success) {
           setNavName(response.data.firstName);
+          setUserRole(response.data.role);
         }
       } catch (error) {
         console.error("Error fetching navbar details:", error);
@@ -42,11 +44,27 @@ function NavBar() {
     };
     fetchNavDetails();
   }, [user]);
+  // Logic: Where does "Courses" button go?
+  // If Instructor -> /CourseEditorPage
+  // If Student/Other -> /CoursePage (later can rename oso
+  const coursesLink =
+    userRole === "instructor" ? "/CourseEditorPage" : "/CoursePage";
   return (
     <header className="home-nav">
-      <div className="home-nav-left">Learning Platform</div>
+      <div className="home-nav-left">
+        <Link to="/" style={{ textDecoration: "none", color: "white" }}>
+          Learning Platform
+        </Link>
+      </div>
       <ul className="home-nav-menu">
-        <li>Courses</li>
+        <li>
+          <Link
+            to={coursesLink}
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
+            Courses
+          </Link>
+        </li>
         <li>About</li>
         <li>Services</li>
         <li>Contact</li>
@@ -147,22 +165,32 @@ const StudentDashboard = ({ profile, gamification }) => (
   </div>
 );
 
-const InstructorDashboard = ({ profile }) => (
-  <div className="home-welcome-box instructor-theme">
-    <div className="dashboard-header">
-      <h2>👨‍🏫 Instructor Portal</h2>
-      <p className="home-logged-in-text">
-        Hello, <strong>{profile?.firstName}</strong>. Ready to teach?
-      </p>
-    </div>
+const InstructorDashboard = ({ profile }) => {
+  const navigate = useNavigate(); // Add this hook
 
-    <div className="action-row">
-      <button className="dashboard-btn primary">Create New Course</button>
-      <button className="dashboard-btn">Manage Students</button>
-      <button className="dashboard-btn">View Reports</button>
+  return (
+    <div className="home-welcome-box instructor-theme">
+      <div className="dashboard-header">
+        <h2>👨‍🏫 Instructor Portal</h2>
+        <p className="home-logged-in-text">
+          Hello, <strong>{profile?.firstName}</strong>. Ready to teach?
+        </p>
+      </div>
+
+      <div className="action-row">
+        {/* Update this button */}
+        <button
+          className="dashboard-btn primary"
+          onClick={() => navigate("/CreateCoursePage")}
+        >
+          Create New Course
+        </button>
+
+        <button className="dashboard-btn">Manage Students</button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const AdminDashboard = ({ profile }) => (
   <div className="home-welcome-box admin-theme">
