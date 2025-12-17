@@ -72,7 +72,7 @@ return (
         {Array.from({ length: daysInMonth }, (_,i) => {   // actual days
           const dayNum = i + 1;
           const isLoggedIn = localDays.includes(dayNum);
-          const isToday = dayNum === today & !isLoggedIn;
+          const isToday = dayNum === today && !isLoggedIn;
 
           const className = [
             "daily-cell",
