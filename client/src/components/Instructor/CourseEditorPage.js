@@ -7,7 +7,7 @@ import "../../CSS/CourseEditorPage.css";
 
 // CHECK THIS PATH: Ensure badgeConfig.js is actually in the 'services' folder.
 // If it is in 'config', change this to: "../../config/badgeConfig"
-import BADGE_LIBRARY from "../../services/badgeConfig";
+import BADGE_LIBRARY from "../../services/badgeConfig.js";
 
 function CourseEditorPage() {
   const { user } = useContext(AuthContext);

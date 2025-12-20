@@ -3,7 +3,7 @@ import { AuthContext } from "../auth/authContext";
 import { authFetch } from "../services/api";
 import "../CSS/ProfilePage.css";
 
-import BADGE_LIBRARY from "../services/badgeConfig";
+import BADGE_LIBRARY from "../services/badgeConfig.js";
 
 function ProfilePage() {
   const { user } = useContext(AuthContext);
