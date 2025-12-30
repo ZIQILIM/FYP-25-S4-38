@@ -5,6 +5,8 @@ import { storage } from "../../firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import "../../CSS/CourseEditorPage.css";
 
+import { Link, resolvePath, useNavigate } from "react-router-dom";
+
 // CHECK THIS PATH: Ensure badgeConfig.js is actually in the 'services' folder.
 // If it is in 'config', change this to: "../../config/badgeConfig"
 import BADGE_LIBRARY from "../../services/badgeConfig.js";
@@ -32,6 +34,10 @@ function CourseEditorPage() {
   const [viewStudentsModalOpen, setViewStudentsModalOpen] = useState(false);
   const [enrolledStudents, setEnrolledStudents] = useState([]);
   const [selectedStudentForBadge, setSelectedStudentForBadge] = useState(null);
+
+  const [selectedCourseQuiz, setCourseQuiz] = useState(null);
+
+  const navigate = useNavigate();
 
   // === DATA FETCHING ===
   const fetchCourses = async () => {
@@ -73,6 +79,12 @@ function CourseEditorPage() {
     setModalStep(1);
     setIsModalOpen(true);
   };
+
+  const openQuizEditor = () => {
+    setModalType("quiz_editor");
+    setModalStep(1);
+    setIsModalOpen(true);
+  }
 
   const openEditModal = () => {
     setModalType("edit_details");
@@ -199,6 +211,11 @@ function CourseEditorPage() {
       setModalLoading(false);
     }
   };
+
+  const handleNewQuizPageLoad = async (e) => {
+    navigate("/QuizEditorPage")
+    setCourseQuiz(null)
+  }
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
@@ -334,6 +351,9 @@ function CourseEditorPage() {
             <button className="dash-btn" onClick={openUploadModal}>
               📤 Upload Content
             </button>
+            <button className="dash-btn" onClick={openQuizEditor}>
+              Add / Edit Quizes
+            </button>
             <button className="dash-btn" onClick={openEditModal}>
               ✏️ Edit Content / View Files
             </button>
@@ -391,6 +411,37 @@ function CourseEditorPage() {
                   Cancel
                 </button>
               </form>
+            )}
+
+            {/* QUIZ EDITOR*/}
+            {modalType === "quiz_editor" && (
+              <div>
+                <h2>Quiz Editor</h2>
+                <h3 style={{ marginTop: "20px", textAlign: "left" }}>
+                  Course Quizes
+                </h3>
+                <div className="file-list">
+                  {selectedCourse.quizes &&
+                  selectedCourse.quizes.length > 0 ? (
+                    selectedCourse.quizes.map((quiz) => (
+                      <div key={quiz.id} className="quiz-item">
+                        <span>📄 {quiz.title}</span>
+                        <button onClick={setCourseQuiz(quiz)}>
+                          Edit
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <p>No quizes in this course yet.</p>
+                  )}
+                </div>
+                <button onClick={handleNewQuizPageLoad} className="modal-btn">
+                  + Create New Quiz
+                </button>
+                <button onClick={closeModal} className="text-btn">
+                  Close
+                </button>
+              </div>
             )}
 
             {/* 2. UPLOAD */}
