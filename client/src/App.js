@@ -16,6 +16,7 @@ import HomePage, { NavBar, Footer } from "./components/HomePage";
 import RegisterPage from "./components/RegisterPage";
 import ProfilePage from "./components/ProfilePage";
 import CourseEditorPage from "./components/Instructor/CourseEditorPage";
+import QuizEditorPage from "./components/Instructor/QuizEditorPage";
 
 import CoursePage from "./components/Student/CoursePage";
 
@@ -36,6 +37,8 @@ function App() {
               <Route path="/ProfilePage" element={<ProfilePage />} />
 
               <Route path="/CourseEditorPage" element={<CourseEditorPage />} />
+
+              <Route path = "/QuizEditorPage" element={<QuizEditorPage />}/>
 
               <Route path="/CoursePage" element={<CoursePage />} />
 
