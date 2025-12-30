@@ -156,13 +156,16 @@ class InstructorController {
 
   async createAssessment(req, res, next) {
     try {
-      const { courseId, title, type, questions } = req.body;
+      const { courseId, title, type, questions, timeLimit, totalPoints } =
+        req.body;
 
       // 1. SAVE HEAVY DATA: Create the document in 'assessments' collection
       const assessment = await assessmentModel.createAssessment(courseId, {
         title,
         type,
         questions,
+        timeLimit,
+        totalPoints,
       });
 
       // 2. SAVE REFERENCE: Add a "shortcut" to the 'courses' collection so it shows up in editing/deleting courses
@@ -170,7 +173,7 @@ class InstructorController {
         id: assessment.id, // Use the real ID from the assessment collection
         title: title,
         type: type, // 'quiz' or 'test'
-        fileUrl: null, // not a file, so this is null
+        totalPoints: totalPoints,
       });
 
       res.status(201).json({ success: true, data: assessment });
