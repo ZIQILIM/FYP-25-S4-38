@@ -4,6 +4,7 @@
 
 const userModel = require("../models/userModel");
 const courseModel = require("../models/courseModel");
+const assessmentModel = require("../models/assessmentModel");
 
 class InstructorController {
   // Get instructor profile
@@ -148,6 +149,34 @@ class InstructorController {
         message: `Content added to course ${courseId} by instructor ${uid}`,
         data: updatedContent,
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async createAssessment(req, res, next) {
+    try {
+      const { courseId, title, type, questions, timeLimit, totalPoints } =
+        req.body;
+
+      // 1. SAVE HEAVY DATA: Create the document in 'assessments' collection
+      const assessment = await assessmentModel.createAssessment(courseId, {
+        title,
+        type,
+        questions,
+        timeLimit,
+        totalPoints,
+      });
+
+      // 2. SAVE REFERENCE: Add a "shortcut" to the 'courses' collection so it shows up in editing/deleting courses
+      await courseModel.addCourseContent(courseId, {
+        id: assessment.id, // Use the real ID from the assessment collection
+        title: title,
+        type: type, // 'quiz' or 'test'
+        totalPoints: totalPoints,
+      });
+
+      res.status(201).json({ success: true, data: assessment });
     } catch (error) {
       next(error);
     }

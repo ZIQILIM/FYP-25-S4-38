@@ -1,0 +1,38 @@
+const db = require("../config/db");
+
+class AssessmentModel {
+  constructor() {
+    this.collection = db.collection("assessments");
+  }
+
+  async createAssessment(courseId, data) {
+    try {
+      // DATA STRUCTURE FOR UNIVERSITY CONTEXT
+      // {
+      //   title: "Midterm Exam - Calculus 1",
+      //   type: "test", // or 'quiz'
+      //   totalPoints: 100, // <--- Crucial for Incentives/Grades
+      //   timeLimit: 60, // (minutes) <--- Crucial for 'Time Taken' analytics
+      //   questions: [
+      //      {
+      //        id: "q1",
+      //        type: "mcq",
+      //        text: "Derivative of x^2?",
+      //        options: ["2x", "x", "0"],
+      //        correct: "2x",
+      //        tags: ["derivatives", "easy"] // <--- For Topic Mastery Insights
+      //      }
+      //   ]
+      // }
+      const docRef = await this.collection.add({
+        courseId,
+        ...data,
+        createdAt: new Date().toISOString(),
+      });
+      return { id: docRef.id, ...data };
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+}
+module.exports = new AssessmentModel();
