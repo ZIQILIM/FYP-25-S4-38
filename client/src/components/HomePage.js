@@ -408,6 +408,48 @@ function HomePage() {
               </div>
             </div>
           </section>
+
+          <section className="landing-page-features" id="features">
+            <h2>Why Choose Our Platform?</h2>
+            
+            <div className="landing-page-features-grid">
+              <div className="landing-page-feature-card">
+                <div className="landing-page-feature-icon">🎮</div>
+                <h3>Gamified Learning Experience</h3>
+                <p>Earn points, unlock badges and climb leaderboards while learning new skills.</p>
+              </div>
+
+              <div className="landing-page-feature-card">
+                <div className="landing-page-feature-icon">🤖</div>
+                <h3>AI-Powered Insights</h3>
+                <p>Receive personalized course recommendations based on your learning style.</p>
+              </div>
+
+              <div className="landing-page-feature-card">
+                <div className="landing-page-feature-icon">📈</div>
+                <h3>Track Progress</h3>
+                <p>Monitor your learning progress with clear analytics and performance metrics.</p>
+              </div>
+
+              <div className="landing-page-feature-card">
+                <div className="landing-page-feature-icon">💪</div>
+                <h3>Stay Motivated</h3>
+                <p>Build daily learning streaks and maintain consistent progress toward your goals.</p>
+              </div>
+
+              <div className="landing-page-feature-card">
+                <div className="landing-page-feature-icon">👥</div>
+                <h3>Connect & Learn</h3>
+                <p>Engage with instructors and peers through discussions and platform messaging.</p>
+              </div>
+
+              <div className="landing-page-feature-card">
+                <div className="landing-page-feature-icon">🧑‍🏫</div>
+                <h3>Expert Instructors</h3>
+                <p>Learn from professional instructors with real-world experience.</p>
+            </div>
+          </div>
+          </section>
         </main>
       </div>
     );
