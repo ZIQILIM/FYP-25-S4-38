@@ -173,7 +173,7 @@ function AssessmentEditorPage() {
           </label>
           <select
             className="modal-input"
-            style={{ width: "200px" }}
+            style={{ width: "250px" }}
             value={currentQ.type}
             onChange={(e) => setCurrentQ({ ...currentQ, type: e.target.value })}
           >
