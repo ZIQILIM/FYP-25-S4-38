@@ -85,6 +85,9 @@ function NavBar() {
                 <button onClick={() => navigate("/ProfilePage")}>
                   Profile
                 </button>
+                <button onClick={() => navigate("/InboxPage")}>
+                  Inbox
+                </button>
                 <button onClick={handleLogOut}>Logout</button>
               </div>
             )}
