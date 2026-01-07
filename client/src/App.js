@@ -21,7 +21,7 @@ import InternshipPostingPage from "./components/InternshipPostingPage";
 import InboxPage from "./components/InboxPage";
 
 import CoursePage from "./components/Student/CoursePage";
-
+import RewardsPage from "./components/Student/RewardStorePage";
 import AdminUserPage from "./components/Admin/AdminUserPage";
 
 import CreateUserPage from "./components/Admin/CreateUserPage";
@@ -55,6 +55,8 @@ function App() {
               <Route path="/CoursePage" element={<CoursePage />} />
 
               <Route path="/InternshipPostingPage" element={<InternshipPostingPage />} />
+
+              <Route path="/RewardStorePage" element={<RewardsPage/>}/>
 
               <Route path="*" element={<Navigate to="/" />} />
               <Route
