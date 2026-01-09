@@ -43,6 +43,15 @@ class InternshipModel {
     if (!doc.exists) return null;
     return { id: doc.id, ...doc.data() };
   }
+
+  async getAllInternships(){
+    try{
+      const snapshot = await this.collection.get();
+      return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    } catch(error){
+      throw new Error(error.message);
+    }
+  }
 }
 
 module.exports = new InternshipModel();

@@ -5,6 +5,7 @@
 const userModel = require("../models/userModel");
 const gamificationModel = require("../models/gamificationModel");
 const courseModel = require("../models/courseModel");
+const internshipModel = require("../models/internshipModel")
 
 class StudentController {
   // Get student profile along with gamification data
@@ -53,6 +54,18 @@ class StudentController {
         data: courses,
       });
     } catch (error) {
+      next(error);
+    }
+  }
+
+  async getAllInternships(req, res, next){
+    try{
+      const internships = await internshipModel.getAllInternships();
+      res.status(200).json({
+        success: true,
+        data: internships,
+      });
+    } catch(error){
       next(error);
     }
   }

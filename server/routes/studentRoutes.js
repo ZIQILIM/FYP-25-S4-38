@@ -34,4 +34,6 @@ router.post("/enroll", studentController.enrollCourse);
 // GET /api/students/getallcourseassessments - Get all course assesments
 router.get("/getcourseassessment", studentController.getAssessment);
 
+router.get("/internships", studentController.getAllInternships)
+
 module.exports = router;

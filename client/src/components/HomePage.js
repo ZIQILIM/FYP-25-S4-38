@@ -151,7 +151,7 @@ const StudentDashboard = ({ profile, gamification }) => {
             <button className="btn btn-secondary">Browse Courses</button>
           </Link>
 
-          <Link to="/InternshipPostingPage">
+          <Link to="/InternshipListPage">
             <button className="btn btn-secondary">Available Internships</button>
           </Link>
 
