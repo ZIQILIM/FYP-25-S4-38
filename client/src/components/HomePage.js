@@ -172,11 +172,11 @@ const StudentDashboard = ({ profile, gamification }) => {
   }, [user]);
 
   const courseColors = [
-  "linear-gradient(135deg, rgba(255, 0, 0, 0.5) 0%, rgba(118, 75, 162, 0.5) 100%)",  
-  "linear-gradient(135deg, rgba(255, 174, 0, 0.45) 0%, rgba(239, 68, 68, 0.45) 100%)",   
-  "linear-gradient(135deg, rgba(255, 251, 0, 0.5) 0%, rgba(37, 99, 235, 0.5) 100%)",     
-  "linear-gradient(135deg, rgba(25, 0, 255, 0.5) 0%, rgba(5, 150, 105, 0.5) 100%)",     
-  "linear-gradient(135deg, rgba(245, 158, 11, 0.5) 0%, rgba(249, 115, 22, 0.5) 100%)",    
+  "linear-gradient(135deg, rgba(255, 0, 0, 0.5) 0%",  
+  "linear-gradient(135deg, rgba(0, 255, 0, 0.45) 0%",   
+  "linear-gradient(135deg, rgba(255, 255, 0, 0.5) 0%",
+  "linear-gradient(135deg, rgba(0, 0, 255, 0.5) 0%",     
+  "linear-gradient(135deg, rgba(245, 165, 0, 0.5) 0%",    
 ];
 
 const OpenCourseModal = (course) => {
