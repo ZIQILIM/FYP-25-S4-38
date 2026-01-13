@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../auth/authContext";
 import { authFetch } from "../../services/api";
 
+import "../../CSS/CoursePage.css";
+
 function AssessmentPage () {
     const { assessmentId } = useParams(); // Get courseId from URL
     const navigate = useNavigate();
@@ -14,7 +16,7 @@ function AssessmentPage () {
     const [wholeAssignment, setWholeAssignment] = useState(null);
 
     const goBackToCourse = () => {
-        navigate("/CourseEditorPage");
+        navigate("/CoursePage");
     };
     const getQuestions = async () => {
         try {
@@ -54,17 +56,54 @@ function AssessmentPage () {
             {
                 startassessment === false && (
                     //Assessment splashpage
-                    <div>
-                        <button onClick={goBackToCourse}>← Back to Courses</button>
+                    <div className="course-page">
+                        <button className="modal-btn" onClick={goBackToCourse} >← Back to Courses</button>
                         <h3>{wholeAssignment.title}</h3>
-                        <button onClick={setStart(true)}>Start Assessment</button>
+                        <p>You will have {wholeAssignment.timeLimit} minutes to finish this assignment.</p>
+                        <button className="modal-btn" onClick={() => setStart(true)} >Start</button>
                     </div>
-            )
+                )
             }
             {
                 startassessment === true && (
                     <div>
                         <h3>{wholeAssignment.title}</h3>
+                        {
+                            questionList.map((question) => {
+                                    return(
+                                        <div>
+                                            {
+                                                //mcq
+                                                question.type === "mcq" && (
+                                                    <div>
+                                                        <p>{question.text}</p>
+                                                        <div>
+                                                            <input type="radio" id="ans1" name="mcq_qn" value="ans1" />
+                                                            <label for="ans1">1) {question.options[0]}</label>
+                                                        </div>
+                                                        <div>
+                                                            <input type="radio" id="ans2" name="mcq_qn" value="ans2" />
+                                                            <label for="ans1">2) {question.options[1]}</label>
+                                                        </div>
+                                                        <div>
+                                                            <input type="radio" id="ans3" name="mcq_qn" value="ans3" />
+                                                            <label for="ans1">3) {question.options[2]}</label>
+                                                        </div>
+                                                        <div>
+                                                            <input type="radio" id="ans4" name="mcq_qn" value="ans4" />
+                                                            <label for="ans1">4) {question.options[3]}</label>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            }
+                                            {
+                                                //short ans
+                                            }
+                                        </div>
+                                    );
+                                }
+                            )
+                        }
                     </div>
                 )
             }
