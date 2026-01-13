@@ -5,6 +5,8 @@
 const userModel = require("../models/userModel");
 const gamificationModel = require("../models/gamificationModel");
 const courseModel = require("../models/courseModel");
+const internshipModel = require("../models/internshipModel");
+const assessmentModel = require("../models/assessmentModel");
 
 class StudentController {
   // Get student profile along with gamification data
@@ -51,6 +53,32 @@ class StudentController {
       res.status(200).json({
         success: true,
         data: courses,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getAllInternships(req, res, next){
+    try{
+      const internships = await internshipModel.getAllInternships();
+      res.status(200).json({
+        success: true,
+        data: internships,
+      });
+    } catch(error){
+      next(error);
+    }
+  }
+
+  async getAllAssessment(req, res, next) {
+    try {
+      //need to change to a function to get data from assessment table
+      //console.log(req);
+      const assessment = await assessmentModel.getAllAssessments();
+      res.status(200).json({
+        success: true,
+        data: assessment,
       });
     } catch (error) {
       next(error);
@@ -122,7 +150,7 @@ class StudentController {
       if (!points || points <= 0) {
         return res.status(400).json({
           success: false,
-          message: "Invalid points value",
+          message: "Invalid points value" + points,
         });
       }
 
@@ -172,5 +200,32 @@ class StudentController {
       next(error);
     }
   }
+
+  // Change currency amount in student gamification profile
+  async changeCurrency(req, res, next) {
+    try {
+      const uid = req.user.uid;
+      const { points } = req.body;
+
+      console.log(points);
+
+      if (!points) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid currency value" + points,
+        });
+      }
+
+      await gamificationModel.changeGamificationCurrency(uid, points);
+
+      res.status(200).json({
+        success: true,
+        message: `${points} currency added successfully`,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
 }
 module.exports = new StudentController();

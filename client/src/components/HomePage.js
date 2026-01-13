@@ -8,6 +8,11 @@ import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import StudentDailyLoginStreak from "./Student/StudentDailyLoginStreak";
 
+import StudentDashboard from "./Student/StudentDashboard";
+import InstructorDashboard from "./Instructor/InstructorDashboard";
+import AdminDashboard from "./Admin/AdminDashboard";
+import InternshipProviderDashboard from "./InternshipProviderDashboard";
+
 import { Link, useNavigate } from "react-router-dom";
 
 function NavBar() {
@@ -126,120 +131,6 @@ function Footer() {
     </footer>
   );
 }
-
-// --- Dashboard Views ---
-
-const StudentDashboard = ({ profile, gamification }) => {
-  // Logic copied from ProfilePage.js to calculate level
-  const currentLevel = gamification?.level || 1;
-  const currentLevelProgress = gamification?.points || 0;
-
-  return (
-    <div className="home-welcome-box">
-      <div className="welcome-header">
-        <div className="welcome-text">
-          <h1>Welcome back, {profile?.firstName || "there"}!</h1>
-          <p>Ready to continue your learning journey?</p>
-        </div>
-
-        <div className="quick-actions">
-          <Link to="/ProfilePage">
-            <button className="btn btn-primary">My Profile</button>
-          </Link>
-
-          <Link to="/CoursePage">
-            <button className="btn btn-secondary">Browse Courses</button>
-          </Link>
-
-          <Link to="/InternshipPostingPage">
-            <button className="btn btn-secondary">Available Internships</button>
-          </Link>
-        </div>
-      </div>
-
-      {gamification && (
-        <div className="home-progress-box">
-          <h3>Your Progress</h3>
-
-          <div className="level-box">
-            <div className="level-info">
-              <span className="level-label">
-                Level <strong>{currentLevel}</strong>
-              </span>
-              <span className="points-label">
-                {currentLevelProgress} / 100 XP
-              </span>
-            </div>
-
-            <div className="progress-bar-bg">
-              <div
-                className="progress-bar-fill"
-                style={{ width: `${currentLevelProgress}%` }}
-              />
-            </div>
-
-            <p className="streak-text">
-              🔥 {gamification.streak || 0} Day Streak
-            </p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const InstructorDashboard = ({ profile }) => {
-  const navigate = useNavigate(); // Add this hook
-
-  return (
-    <div className="home-welcome-box instructor-theme">
-      <div className="dashboard-header">
-        <h2>👨‍🏫 Instructor Portal</h2>
-        <p className="home-logged-in-text">
-          Hello, <strong>{profile?.firstName}</strong>. Ready to teach?
-        </p>
-      </div>
-
-      <div className="action-row">
-        {/* Update this button */}
-        <button
-          className="dashboard-btn primary"
-          onClick={() => navigate("/CourseEditorPage")}
-        >
-          View Created Courses
-        </button>
-
-        <button className="dashboard-btn">Manage Students</button>
-      </div>
-    </div>
-  );
-};
-
-const AdminDashboard = ({ profile }) => {
-  const navigate = useNavigate(); // Add this hook
-
-  return (
-    <div className="home-welcome-box admin-theme">
-      <div className="dashboard-header">
-        <h2>🛡️ Admin Control Panel</h2>
-        <p className="home-logged-in-text">
-          Logged in as Administrator: <strong>{profile?.firstName}</strong>
-        </p>
-      </div>
-
-      <div className="action-row">
-        <button
-          className="dashboard-btn warning"
-          onClick={() => navigate("/admin/users")}
-        >
-          Manage User Accounts
-        </button>
-        <button className="dashboard-btn">System Settings</button>
-        <button className="dashboard-btn">View Logs</button>
-      </div>
-    </div>
-  );
-};
 
 // --- Main Page Component ---
 
@@ -509,8 +400,17 @@ function HomePage() {
               {profile?.role === "admin" && (
                 <AdminDashboard profile={profile} />
               )}
+              {profile?.role === "internshipprovider" && (
+                <InternshipProviderDashboard profile={profile} />
+              )}
+
               {/* Fallback if role is missing/unknown */}
-              {!["student", "instructor", "admin"].includes(profile?.role) && (
+              {![
+                "student",
+                "instructor",
+                "admin",
+                "internshipprovider",
+              ].includes(profile?.role) && (
                 <StudentDashboard
                   profile={profile}
                   gamification={gamification}
@@ -521,7 +421,6 @@ function HomePage() {
         </section>
       </main>
 
-      {/* Daily Login Streak Modal */}
       {profile?.role === "student" && (
         <StudentDailyLoginStreak
           isOpen={showDailyLogin}

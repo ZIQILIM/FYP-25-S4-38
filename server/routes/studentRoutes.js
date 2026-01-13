@@ -19,6 +19,9 @@ router.put("/profile", studentController.updateProfile);
 // POST /api/students/points - Add points
 router.post("/points", studentController.addPoints);
 
+// POST /api/students/changecurrency - Change Currency Value by input
+router.post("/changecurrency", studentController.changeCurrency);
+
 // POST /api/students/login - Record daily login
 router.post("/login", studentController.recordLogin);
 
@@ -30,5 +33,10 @@ router.get("/courses", studentController.getAllCourses);
 
 // POST /api/students/enroll - Enroll in a course
 router.post("/enroll", studentController.enrollCourse);
+
+// GET /api/students/getallcourseassessments - Get all assesment
+router.get("/getcourseassessment", studentController.getAllAssessment);
+
+router.get("/internships", studentController.getAllInternships)
 
 module.exports = router;

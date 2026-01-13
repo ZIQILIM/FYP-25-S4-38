@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../../auth/authContext";
 import { authFetch } from "../../services/api";
 import "../../CSS/CourseEditorPage.css"; // Reusing grid styles
@@ -8,11 +9,17 @@ function CoursePage() {
   const { user } = useContext(AuthContext); // get logged in use information
   const [courses, setCourses] = useState([]); // stores all courses
   const [loading, setLoading] = useState(true);
+  const [assesments, setAssesment] = useState([]);
+  const navigate = useNavigate();
 
   // Modal State
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false); // controls popup visibility
   const [activeTab, setActiveTab] = useState("materials");  // which tab is active in popup
+
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const openCourseId = searchParams.get("openCourse");
 
   // Fetch all courses
   const fetchCourses = async () => {
@@ -35,6 +42,18 @@ function CoursePage() {
   useEffect(() => {
     if (user) fetchCourses();
   }, [user]);
+
+  useEffect(() => {
+    if (openCourseId && courses.length > 0) {
+      const courseToOpen = courses.find(course => course.id === openCourseId);
+      if (courseToOpen) {
+        const enrolled = courseToOpen.enrolledStudents?.includes(user?.uid);
+        setSelectedCourse(courseToOpen);
+        setActiveTab(enrolled ? "materials": "reviews");
+        setIsModalOpen(true);
+      }
+    }
+  }, [openCourseId, courses, user]);
 
   // Safely get the user ID, or use an empty string if user is null
   const userId = user?.uid || "";
@@ -216,9 +235,19 @@ function CoursePage() {
                 <div className="file-list student-file-list">
                   {selectedCourse.content.map((file) => (
                     <div key={file.id} className="file-item">
-                      <a href={file.fileUrl} target="_blank" rel="noreferrer">
+                      {file.type === "quiz" ?
+                      <div>
+                        <p>{file.title}</p>
+                        <button onClick={() =>
+                          navigate(`/student/course/assessment/${file.id}`)
+                        }>Take Assessment</button>
+                      </div> 
+                      :
+                        <a href={file.fileUrl} target="_blank" rel="noreferrer">
                         {file.title}
-                      </a>
+                        </a>
+                      }
+                      
                     </div>
                   ))}
                 </div>
