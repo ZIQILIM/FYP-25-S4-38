@@ -16,7 +16,9 @@ function RewardStorePage() {
     const [loading, setLoading] = useState(true);
     const [cfmMsg, setcfmMsg] = useState(false);
     const [rewardDisplay, setrewardDisplay] = useState(false);
+    const [THistDisplay, setTHistDisplay] = useState(false);
     const [urBrokelol, setBrokeness] = useState(null);
+    const [THistArray, setTHistArray] = useState(null);
 
     //very stupid point increment
     const [ten, setshite] = useState({points:10});
@@ -29,6 +31,11 @@ function RewardStorePage() {
                 await authFetch("http://localhost:5000/api/students/changecurrency", {method: "POST", body:JSON.stringify({points:-50})}, user)
             }catch (error){
                 console.error("Change currency error:", error);
+            }
+            try{
+                await authFetch("http://localhost:5000/api/students/updateTransactionHistory", {method: "POST", body: JSON.stringify({rewardID: rewardID})}, user)
+            }catch(error){
+                console.error("Update Transaction History error:", error);
             }finally{
                 setLoading(true);
                 forceReloadData();
@@ -40,6 +47,11 @@ function RewardStorePage() {
                 await authFetch("http://localhost:5000/api/students/changecurrency", {method: "POST", body:JSON.stringify({points:-100})}, user)
             }catch (error){
                 console.error("Change currency error:", error);
+            }
+            try{
+                await authFetch("http://localhost:5000/api/students/updateTransactionHistory", {method: "POST", body: JSON.stringify({rewardID: rewardID})}, user)
+            }catch(error){
+                console.error("Update Transaction History error:", error);
             }finally{
                 setLoading(true);
                 forceReloadData();
@@ -51,6 +63,11 @@ function RewardStorePage() {
                 await authFetch("http://localhost:5000/api/students/changecurrency", {method: "POST", body:JSON.stringify(ten)}, user)
             }catch (error){
                 console.error("Change currency error:", error);
+            }
+            try{
+                await authFetch("http://localhost:5000/api/students/updateTransactionHistory", {method: "POST", body: JSON.stringify({rewardID: rewardID})}, user)
+            }catch(error){
+                console.error("Update Transaction History error:", error);
             }finally{
                 setLoading(true);
                 forceReloadData();
@@ -115,6 +132,15 @@ function RewardStorePage() {
     const closeReward = () => {
         setrewardDisplay(false);
         setIsModalOpen(false);
+    }
+
+    const openTHistory = () => {
+        setTHistDisplay(true);
+        setTHistArray(gamification.incentiveTransactionHistory);
+    }
+
+    const closeTHistory = () => {
+        setTHistDisplay(false);
     }
 
     const forceReloadData = async () => {
@@ -216,6 +242,9 @@ function RewardStorePage() {
             </p>
             <button onClick = {debugaddpoints}>
                 Debug: Add Currency
+            </button>
+            <button onClick = {openTHistory}>
+                View Transaction History
             </button>
             <div className="courses-grid">
                 <div
@@ -392,6 +421,34 @@ function RewardStorePage() {
                                 </div>
                             <div className="course-modal-footer">
                                 <button className="modal-btn" onClick={closeReward}>
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+            {
+                THistDisplay === true && (
+                    <div className="modal-overlay">
+                        <div className="course-modal-box">
+                                <div className="course-modal-header">
+                                    <div className="course-title-row">
+                                            Transaction History
+                                    </div>
+                                    {
+                                        gamification.incentiveTransactionHistory.map((entry) => (
+                                            <span>
+                                                <p>{entry.reward}</p>
+                                                <p>Redeemed on: {entry.dateRedeemed}</p>
+                                            </span>
+                                        )
+
+                                        )
+                                    }
+                                </div>
+                            <div className="course-modal-footer">
+                                <button className="modal-btn" onClick={closeTHistory}>
                                     Close
                                 </button>
                             </div>
