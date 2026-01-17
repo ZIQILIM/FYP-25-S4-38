@@ -20,10 +20,11 @@ function ProfilePage() {
     lastName: "",
     email: "",
     avatar: "",
+    bio: "",
   });
   const AVATAR_OPTIONS = ["👨‍🎓", "👩‍🔬", "🦸", "🕵️", "🧑‍🚀"];
 
-  // --- NEW: ROLE DESCRIPTIONS MAPPING ---
+  // --- DEFAULT ROLE DESCRIPTIONS (Fallback if no custom bio) ---
   const ROLE_DESCRIPTIONS = {
     student: "Student at the Incentive-Driven Learning Platform.",
     instructor: "Passionate educator dedicated to student success.",
@@ -73,6 +74,7 @@ function ProfilePage() {
       lastName: profileData.lastName,
       email: profileData.email,
       avatar: profileData.avatar || "👨‍🎓",
+      bio: profileData.bio || "",
     });
     setIsEditOpen(true);
   };
@@ -108,6 +110,8 @@ function ProfilePage() {
   const currentLevel = gamification?.level || 1;
   const currentLevelProgress = points;
 
+  const displayBio = profileData.bio || ROLE_DESCRIPTIONS[userRole] || ROLE_DESCRIPTIONS["student"];
+
   return (
     <div className="profile-page">
       <div className="profile-container">
@@ -123,7 +127,6 @@ function ProfilePage() {
             <div>
               <h1 className="profile-name">{displayName}</h1>
               <p className="profile-role">
-                {/* Capitalize Role */}
                 {userRole === "internshipprovider"
                   ? "Internship Provider"
                   : userRole.charAt(0).toUpperCase() + userRole.slice(1)}{" "}
@@ -136,8 +139,7 @@ function ProfilePage() {
           <div className="about-section">
             <h2>About me</h2>
             <p className="about-placeholder">
-              {/* === UPDATED LOGIC HERE === */}
-              {ROLE_DESCRIPTIONS[userRole] || ROLE_DESCRIPTIONS["student"]}
+              {displayBio}
             </p>
           </div>
 
@@ -170,7 +172,6 @@ function ProfilePage() {
 
         {/* RIGHT SECTION */}
         <div className="right-section">
-          {/* --- FIX: EARNED BADGES PREVIEW --- */}
           {userRole === "student" && (
             <div className="badges-section">
               <div
@@ -196,38 +197,23 @@ function ProfilePage() {
                 )}
               </div>
 
-              {/* Click container to open modal */}
               <div
                 className="badges-container"
-                onClick={() => setIsBadgeModalOpen(true)}
+                onClick={() => gamification?.badges?.length > 0 && setIsBadgeModalOpen(true)}
                 style={{
-                  cursor: "pointer",
-                  display: "flex",
-                  gap: "10px",
-                  flexWrap: "wrap",
+                  cursor: gamification?.badges?.length > 0 ? "pointer" : "default",
                 }}
               >
                 {gamification?.badges && gamification.badges.length > 0 ? (
-                  // LOGIC: Take only the first 3 badges
                   gamification.badges.slice(0, 3).map((badge, index) => {
-                    // This ensures we get a clean String, even if the DB has "dirty" objects
                     let finalName = "";
 
                     if (typeof badge === "string") {
                       finalName = badge;
                     } else if (typeof badge === "object" && badge !== null) {
-                      // If DB accidentally saved it as an object
                       finalName = badge.name || "Unknown";
                     }
 
-                    // --- 2. DEBUGGING (Check your Console to see this) ---
-                    console.log(`Badge #${index}:`, finalName);
-                    console.log(
-                      "Found in Library?",
-                      BADGE_LIBRARY[finalName] ? "YES" : "NO"
-                    );
-
-                    // --- 3. LOOKUP (Use finalName, not badgeName) ---
                     const badgeInfo = BADGE_LIBRARY[finalName] || {
                       icon: "❓",
                       color: "#eee",
@@ -237,16 +223,9 @@ function ProfilePage() {
                       <div
                         key={index}
                         className="badges"
-                        title={finalName} // Use finalName here too
+                        title={finalName}
                         style={{
                           backgroundColor: badgeInfo.color,
-                          width: "60px",
-                          height: "60px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          borderRadius: "10px",
-                          fontSize: "30px",
                         }}
                       >
                         {badgeInfo.icon}
@@ -259,7 +238,6 @@ function ProfilePage() {
                   </p>
                 )}
 
-                {/* Visual indicator if there are more than 3 */}
                 {gamification?.badges?.length > 3 && (
                   <div
                     style={{
@@ -318,6 +296,7 @@ function ProfilePage() {
                     </button>
                   ))}
                 </div>
+
                 <input
                   className="profile-modal-input"
                   placeholder="First Name"
@@ -334,6 +313,18 @@ function ProfilePage() {
                     setEditForm({ ...editForm, lastName: e.target.value })
                   }
                 />
+
+                <textarea
+                  className="profile-modal-input"
+                  placeholder="About me (optional)"
+                  value={editForm.bio}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, bio: e.target.value })
+                  }
+                  rows="4"
+                  style={{ resize: "vertical", fontFamily: "inherit" }}
+                />
+
                 <button type="submit" className="profile-modal-btn">
                   Save Changes
                 </button>
@@ -349,7 +340,7 @@ function ProfilePage() {
           </div>
         )}
 
-        {/* === NEW: FULL BADGE COLLECTION MODAL === */}
+        {/* === FULL BADGE COLLECTION MODAL === */}
         {isBadgeModalOpen && (
           <div
             className="profile-modal-overlay"
