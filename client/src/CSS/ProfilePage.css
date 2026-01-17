@@ -1,34 +1,33 @@
-/* PAGE BACKGROUND (same gradient theme as register page) */
 .profile-page {
   min-height: 100vh;
   width: 100%;
-  background: linear-gradient(
-    to bottom,
-    rgb(124, 124, 150),
-    rgba(164, 143, 223, 0.342)
-  );
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding: 24px 16px;
+  align-items: center;
+  padding: 80px 20px 40px;
   box-sizing: border-box;
 }
 
-/* MAIN CONTAINER CARD */
 .profile-container {
   background-color: white;
   width: 90%;
   max-width: 900px;
-  margin: auto;
   padding: 40px;
-  border-radius: 30px;
+  border-radius: 24px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 40px;
-  font-family: Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
-/* LEFT SECTION */
+.left-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
 .profile-header {
   display: flex;
   align-items: center;
@@ -36,175 +35,185 @@
 }
 
 .profile-avatar {
-  width: 100px;
-  height: 100px;
-  background: rgb(124, 124, 150);
-  border-radius: 50%;
-  color: white;
-  font-size: 45px;
+  width: 80px;
+  height: 80px;
+  background: white;
+  border-radius: 16px;
+  font-size: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .profile-name {
-  margin: 0;
-  font-size: 28px;
-  font-weight: bold;
-  color: rgb(50, 50, 50);
+  margin: 0 0 4px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #2d3436;
 }
 
 .profile-role {
-  margin: 2px 0 0;
-  color: gray;
-  font-size: 15px;
+  margin: 0 0 4px;
+  color: #636e72;
+  font-size: 14px;
 }
 
-h2 {
-  color: rgb(50, 50, 50);
-  margin-bottom: 10px;
-  font-size: 20px;
+.email-text {
+  margin: 0;
+  font-size: 13px;
+  color: #95a5a6;
 }
 
-/* Completed courses & about sections */
-.courses-section ul {
-  list-style: none;
-  padding-left: 10px;
+.about-section h2 {
+  color: #2d3436;
+  margin-bottom: 8px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.about-placeholder {
+  font-size: 14px;
+  color: #636e72;
+  line-height: 1.6;
   margin: 0;
 }
 
-.courses-section li {
-  padding: 5px 0;
-  color: rgb(70, 70, 70);
+.courses-section h2 {
+  color: #2d3436;
+  margin-bottom: 12px;
+  font-size: 18px;
+  font-weight: 700;
 }
 
-/* RIGHT SECTION */
-.badges-section h2 {
-  margin-bottom: 10px;
-}
-.badges-section .badges-container {
-  display: flex;
-  gap: 15px;
-}
-
-/* BUTTONS */
-.action-buttons {
-  margin-top: 40px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  max-width: 340px;
-}
-
-.action-buttons button {
-  padding: 12px;
-  background-color: white;
-  border: 2px solid rgb(124, 147, 224); /* blue tone from register links */
-  border-radius: 12px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
-  font-size: 15px;
-}
-
-.action-buttons button:hover {
-  background-color: rgba(124, 147, 224, 0.1);
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .profile-container {
-    grid-template-columns: 1fr;
-    max-width: 95%;
-  }
-}
-
-/* LEVEL PROGRESS BAR STYLES */
 .level-box {
   background-color: #f8f9fa;
   padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  margin-top: 10px;
+  border-radius: 12px;
+  border: 2px solid #e9ecef;
 }
 
 .level-info {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
+  align-items: center;
+  margin-bottom: 12px;
   font-size: 14px;
-  color: #555;
+}
+
+.level-label {
+  color: #2d3436;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .level-label strong {
-  color: #2c3e50;
+  color: #2d3436;
   font-size: 16px;
+  font-weight: 700;
+}
+
+.points-label {
+  color: #636e72;
+  font-size: 14px;
 }
 
 .progress-bar-bg {
   width: 100%;
-  height: 12px;
-  background-color: #e0e0e0;
+  height: 8px;
+  background-color: #e9ecef;
   border-radius: 10px;
   overflow: hidden;
-  position: relative;
+  margin-bottom: 12px;
 }
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #4caf50, #81c784); /* Green Gradient */
+  background: linear-gradient(90deg, #4cd137 0%, #44bd32 100%);
   border-radius: 10px;
   transition: width 0.5s ease-in-out;
-  box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
 }
 
 .streak-text {
-  margin-top: 12px;
-  font-size: 14px;
-  font-weight: bold;
-  color: #ff9800; /* Orange for fire/streak */
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
-}
-
-/* Add to ProfilePage.css */
-
-.stat-list {
-  list-style: none;
-  padding: 0;
+  gap: 6px;
+  background: #fff3cd;
+  color: #856404;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
   margin: 0;
 }
 
-.stat-list li {
-  background-color: #f8f9fa;
-  padding: 12px 15px;
-  margin-bottom: 8px;
-  border-radius: 8px;
+.right-section {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.badges-section h2 {
+  color: #2d3436;
+  margin-bottom: 4px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.badges-container {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.badges {
+  width: 100px;
+  height: 100px;
+  border-radius: 12px;
+  display: flex;
   align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.badges:hover {
+  transform: scale(1.05);
+}
+
+.no-badges-text {
+  color: #636e72;
   font-size: 14px;
-  color: #555;
-  border: 1px solid #eee;
+  padding: 20px 0;
+  width: 100%;
 }
 
-.stat-list li strong {
-  color: #2c3e50;
-  font-size: 15px;
+.action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: auto;
 }
 
-.info-box {
-  background-color: #fff;
-  padding: 15px;
-  border: 1px solid #eee;
-  border-radius: 10px;
-}
-
-.info-box p {
-  margin: 8px 0;
+.action-buttons button {
+  padding: 12px 20px;
+  background-color: white;
+  border: 2px solid #2d3436;
+  border-radius: 12px;
+  font-weight: 600;
   font-size: 14px;
-  color: #666;
+  color: #2d3436;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-buttons button:hover {
+  background-color: #2d3436;
+  color: white;
+  transform: translateY(-2px);
 }
 
 .profile-modal-overlay {
@@ -219,87 +228,156 @@ h2 {
 
 .profile-modal-box {
   background: white;
-  padding: 30px;
-  border-radius: 12px;
+  padding: 32px;
+  border-radius: 20px;
   width: 90%;
-  max-width: 500px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  text-align: center;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.profile-modal-box h2 {
+  font-size: 24px;
+  color: #2d3436;
+  margin-bottom: 8px;
+  font-weight: 700;
 }
 
 .profile-modal-input {
   width: 100%;
   padding: 12px;
   margin-bottom: 15px;
-  border: 1px solid #ddd;
+  border: 1px solid #dfe6e9;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 14px;
   box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.profile-modal-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .profile-modal-btn {
   width: 100%;
   padding: 12px;
-  background-color: #000;
+  background-color: #2d3436;
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   margin-top: 10px;
+  transition: all 0.2s ease;
+}
+
+.profile-modal-btn:hover {
+  background-color: #1a252f;
+  transform: translateY(-1px);
 }
 
 .profile-text-btn {
   background: none;
   border: none;
-  color: #666;
+  color: #636e72;
   margin-top: 15px;
   cursor: pointer;
   text-decoration: underline;
+  font-size: 14px;
 }
 
-.badges-container {
-  display: flex;
-  flex-direction: column; /* each badge on its own row */
-  gap: 12px;
+.profile-text-btn:hover {
+  color: #2d3436;
 }
 
-.badges {
+.badges-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.badge-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  padding: 14px;
-  background: #f8f9fb;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  border: 1px solid #eee;
 }
 
-.badge_titles {
+.badge-card-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+  justify-content: center;
+  font-size: 36px;
 }
 
-/* Badge image */
-.badge_icon {
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
-}
-
-/* Badge name */
-.badge_name {
-  font-weight: 600;
+.badge-card h3 {
   font-size: 16px;
+  color: #2d3436;
+  font-weight: 600;
   margin: 0;
-  white-space: nowrap;
 }
 
-/* Badge description */
-.badge_desc {
-  font-size: 14px;
-  color: #666;
+.badge-card p {
+  font-size: 13px;
+  color: #636e72;
+  line-height: 1.4;
   margin: 0;
-  flex: 1; /* allows description to take remaining space */
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .profile-container {
+    grid-template-columns: 1fr;
+    padding: 24px;
+    gap: 24px;
+  }
+
+  .badges-container {
+    justify-content: center;
+  }
+
+  .badges {
+    width: 80px;
+    height: 80px;
+    font-size: 32px;
+  }
+
+  .badges-modal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .action-buttons {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 30px;
+  }
+
+  .profile-name {
+    font-size: 20px;
+  }
+
+  .badges {
+    width: 70px;
+    height: 70px;
+    font-size: 28px;
+  }
 }

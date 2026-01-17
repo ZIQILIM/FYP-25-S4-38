@@ -36,6 +36,7 @@ class AuthController {
         role,
         accountType: role,
         avatar: avatar || "👨‍🎓", // Default if none selected
+        bio:"",
       });
 
       // set custom claims in Firebase Auth for role-based access
@@ -68,6 +69,7 @@ class AuthController {
         data: {
           uid,
           ...userProfile,
+          bio: userProfile.bio || "",
         },
       });
     } catch (error) {
