@@ -313,7 +313,7 @@ export default function StudentDashboard({ profile, gamification }) {
                 className={`tab-btn ${activeTab === "materials" ? "active" : ""}`}
                 onClick={() => setActiveTab("materials")}
               >
-                📚 Course Materials
+                Course Materials
               </button>
               <button
                 className={`tab-btn ${
@@ -321,7 +321,7 @@ export default function StudentDashboard({ profile, gamification }) {
                 }`}
                 onClick={() => setActiveTab("assessments")}
               >
-                📖 Assessments
+                Assessments
               </button>
             </div>
 
@@ -329,16 +329,16 @@ export default function StudentDashboard({ profile, gamification }) {
               {activeTab === "materials" && (
                 <>
                   <h3>Course Materials</h3>
-                  {selectedCourse.content && selectedCourse.content.length > 0 ? (
-                    <div className="file-list student-file-list">
-                      {selectedCourse.content.map((file) => (
-                        <div key={file.id} className="file-item">
-                          {file.type === "quiz" ? (
-                            <div>
-                              <p>{file.title}</p>
-                              <button>Take Assessment</button>
-                            </div>
-                          ) : (
+                  {(() => {
+                    // Filter out assessments - only show documents/files
+                    const materials = selectedCourse.content?.filter(
+                      (file) => file.type !== "quiz" && file.type !== "test"
+                    ) || [];
+                    
+                    return materials.length > 0 ? (
+                      <div className="file-list student-file-list">
+                        {materials.map((file) => (
+                          <div key={file.id} className="file-item">
                             <a
                               href={file.fileUrl}
                               target="_blank"
@@ -346,20 +346,60 @@ export default function StudentDashboard({ profile, gamification }) {
                             >
                               {file.title}
                             </a>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="locked-text">No materials uploaded yet.</p>
-                  )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="locked-text">No materials uploaded yet.</p>
+                    );
+                  })()}
                 </>
               )}
 
               {activeTab === "assessments" && (
                 <>
                   <h3>Assessments</h3>
-                  <p className="locked-text">No assessments yet.</p>
+                  {(() => {
+                    // Filter only assessments (quiz and test)
+                    const assessments = selectedCourse.content?.filter(
+                      (file) => file.type === "quiz" || file.type === "test"
+                    ) || [];
+                    
+                    return assessments.length > 0 ? (
+                      <div className="file-list student-file-list">
+                        {assessments.map((assessment) => (
+                          <div key={assessment.id} className="file-item" style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            padding: "12px 0",
+                            borderBottom: "1px solid #eee"
+                          }}>
+                            <span style={{ fontSize: "14px", color: "#2c3e50" }}>
+                              {assessment.title}
+                            </span>
+                            <button 
+                              onClick={() => window.location.href = `/student/course/assessment/${assessment.id}`}
+                              style={{
+                                padding: "6px 14px",
+                                fontSize: "13px",
+                                background: "#000",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                fontWeight: "600"
+                              }}
+                            >
+                              Take Assessment
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="locked-text">No assessments available yet.</p>
+                    );
+                  })()}
                 </>
               )}
             </div>
