@@ -12,18 +12,31 @@ function AssessmentPage () {
 
     const [loading, setLoading] = useState(true);
     const [startassessment, setStart] = useState(false);
+    const [endassessment, setEnd] = useState(false);
     const [questionList, setQuestions] = useState([]);
     const [wholeAssignment, setWholeAssignment] = useState(null);
+    const [attemptData, setAttemptData] = useState(null);
+    const [eTime, setETime] = useState(0);
+    const [eTotalTime, setETotalTime] = useState(0);
+    const [questionIndex, setquestionIndex] = useState(0);
+    const [reviewData, setRD] = useState(null);
+    const [sendtoDbalr, setsentalr] = useState(false);
 
     let totaltime = 0;
     let remainingtime = totaltime;
-    let timerInterval = null;
+    const [timerInterval, setTimer] = useState(null);
 
-    let questionIndex = 0;
+    const [userAnswerArray, setUserAns] = useState([]);
+    let elapsedtime = 0;
+    let elapsedtimeTotal = 0;
+    const [elapsedtimeperQn, setETQ] = useState([]);
 
-    let userAnswerArray = [];
+    const qngradeData = [];
 
     const [selectedValue, setSelectedValue] = useState("");
+
+    const [markedAlr, setMarkedAlr] = useState(false);
+    const [Requiremarking, setRequiremarking] = useState(false);
 
     const handleRadioChange = (value) => {
         setSelectedValue(value);
@@ -71,15 +84,23 @@ function AssessmentPage () {
         console.log("Assessment Started");
     }
 
-    function startTimer() {
+    const startTimer = () => {
         totaltime = wholeAssignment.timeLimit * 60; //convert to seconds
         remainingtime = totaltime;
-        timerInterval = setInterval(timerLogic, 1000);
+        
+        setTimer(setInterval(timerLogic, 1000));
     }
 
     function timerLogic(){
+        if(endassessment === true){
+            clearInterval(timerInterval);
+        }
         if(remainingtime > 0){
             remainingtime--;
+            elapsedtime++;
+            setETime(elapsedtime);
+            elapsedtimeTotal++;
+            setETotalTime(elapsedtimeTotal);
             updateDisplay();
         }
         else{
@@ -96,29 +117,97 @@ function AssessmentPage () {
         const mins = Math.floor(x/60);
         x = (x - (mins * 60));
         const secs = x;
-        document.getElementById("timerdisplay").innerHTML = "Remaining Time: " + `${hrs}:${mins}:${secs}`;
+        if(endassessment === false)
+            document.getElementById("timerdisplay").innerHTML = "Remaining Time: " + `${hrs}:${mins}:${secs}`;
     }
 
     function IncrementQuestion(){
         let x = userAnswerArray.length;
         if(x === questionIndex){
             //no answer for latest question
-            userAnswerArray.push(getAnswer());
+            let z = [];
+            if(userAnswerArray.length > 0)
+                z = userAnswerArray;
+            z.push(getAnswer());
+            setUserAns(z);
+            //userAnswerArray.push(getAnswer());
+            let aa = [];
+            if(elapsedtimeperQn.length>0)
+                aa = elapsedtimeperQn;
+            aa.push(eTime);
+            setETQ(aa);
+            elapsedtime = 0;
         }
-        questionIndex++;
+        else {
+            //should only be hit when you decrement and re-increment questions
+            let z = userAnswerArray;
+            z[x] = getAnswer();
+            setUserAns(z);
+
+            let aa = elapsedtimeperQn;
+            aa[x] = aa[x] + (eTime);
+            setETQ(aa);
+            elapsedtime = 0;
+        }
+        let y = questionIndex + 1;
+        setquestionIndex(y);
+        clearRadioSelection();
     }
 
-    function submitAss(){
+    function DecrementQuestion(){
+        let y = questionIndex - 1;
+        setquestionIndex(y);
+    }
+
+    const sendtodb = async () => {
+        console.log("You should only see this once.");
+        setsentalr(true);
+        try {
+                console.log(JSON.stringify(attemptData));
+                console.log(JSON.stringify(wholeAssignment.courseId));
+                console.log(JSON.stringify(assessmentId));
+                const res = await authFetch("http://localhost:5000/api/students/submitAssessmentAttempt", {method: "POST",
+                                                                                                             body:JSON.stringify({CID: wholeAssignment.courseId, AID: assessmentId, scoreData: attemptData.score, timeData: attemptData.timeTaken, datatobesent: attemptData}),}, user);
+                if(res.success){
+                    // yay
+                    console.log("Sent to DB!");
+                }
+            }catch(error){
+                console.error("Failed to submit attempt to DB:", error);
+            }
+            finally{
+                //Go to review
+                //setsentalr(true);
+            }
+    }
+
+    const submitAss = async () => {
         let x = userAnswerArray.length;
         if(x === questionIndex){
             //no answer for latest question
-            userAnswerArray.push(getAnswer());
+            //userAnswerArray.push(getAnswer());
+            let z = [];
+            if(userAnswerArray.length > 0)
+                z = userAnswerArray;
+            z.push(getAnswer());
+            setUserAns(z);
+
+            let aa = [];
+            if(elapsedtimeperQn.length>0)
+                aa = elapsedtimeperQn;
+            aa.push(eTime);
+            setETQ(aa);
+            elapsedtime = 0;
             setSelectedValue("");
         }
         if(wholeAssignment.type === "quiz")
         {
             //mark now
-            markAssessment();
+            setRequiremarking(true);
+            //markAssessment();
+            clearInterval(timerInterval);
+            //formatReview();
+            //setEnd(true);
         }
         else{
             //send to db
@@ -129,20 +218,74 @@ function AssessmentPage () {
         return selectedValue;
     }
 
+    
+
     function markAssessment(){
-        for(let i = 0; i < userAnswerArray; i++)
+        for(let i = 0; i < userAnswerArray.length; i++)
         {
+            let correct = false;
             if(userAnswerArray[i] === (questionList[i].correct).toString())
             {
+                correct = true;
                 console.log("Q" + i + " is correct.");
             }
             else{
+                correct = false;
                 console.log("Q" + i + " is wrong.");
             }
+            let singleQnData = {qId: i, isCorrect: correct, timeSpent: elapsedtimeperQn[i], selected: userAnswerArray[i]}
+            qngradeData.push(singleQnData);
+        }
+        setAttemptData({assessmentId: assessmentId,score: 0, timeTaken: eTotalTime, answers: qngradeData})
+    }
+
+    function formatReview(){
+        let reviewlist = []
+        for (let x = 0; x < userAnswerArray.length; x++){
+            reviewlist.push(<li>
+                <p>Q{x}: {questionList[x].text}</p>
+                <p>You selected: {questionList[x].options[userAnswerArray[x]]}</p>
+                {qngradeData[x].isCorrect === true ? (
+                    <p>You are correct!</p>
+                    ) : (
+                    <p>You are wrong. The correct answer is: {questionList[x].correct}</p>
+                    )
+                }
+            </li>);
+        }
+        setRD(reviewlist);
+    }
+
+    function clearRadioSelection(){
+        const radios = document.getElementsByName('mcq_qn');
+        for (const radio of radios) {
+            radio.checked = false;
         }
     }
 
+    if(sendtoDbalr === false && endassessment === true && attemptData){
+        sendtodb(true);
+    }
+
+    if(Requiremarking === true && markedAlr === false){
+        markAssessment();
+        formatReview();
+        setEnd(true);
+        setMarkedAlr(true);
+    }
+
     if (loading) return <div>Loading assessment...</div>;
+
+    if(endassessment) return (
+        <div>
+            <h3>{wholeAssignment.title}</h3>
+            <p>Assessment Review</p>
+            <div>
+                <ul>{reviewData}</ul>
+            </div>
+            <button className="modal-btn" onClick={goBackToCourse} >← Back to Courses</button>
+        </div> 
+    )
 
       return(
         <div>
@@ -202,9 +345,9 @@ function AssessmentPage () {
                                 <span>
                                     {
                                         //back
-                                        questionIndex > 0 && (
-                                            <button>Previous Question</button>
-                                        )
+                                        //questionIndex > 0 && (
+                                        //    <button onclick={DecrementQuestion}>Previous Question</button>
+                                        //)
                                     }
                                     {
                                         (questionIndex+1) === questionList.length ? (

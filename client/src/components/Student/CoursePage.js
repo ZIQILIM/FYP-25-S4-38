@@ -157,8 +157,6 @@ function CoursePage() {
 {isModalOpen && selectedCourse && ( // COURSE DETAILS MODAL
   <div className="modal-overlay">
     <div className="course-modal-box">
-
-      {/*HEADER (Course Info)*/}
       <div className="course-modal-header"> 
         <div className="course-title-row">
           <h2>{selectedCourse.title}</h2>
@@ -177,31 +175,29 @@ function CoursePage() {
         </div>
       </div>
 
-      {/*TABS (Switch Between views)*/}
       <div className="tab-navigation">
         <button
           className={`tab-btn ${activeTab === "materials" ? "active" : ""}`}
           onClick={() => setActiveTab("materials")}
         >
-          📚Course Materials
+          Course Materials
         </button>
 
         <button
           className={`tab-btn ${activeTab === "assessments" ? "active" : ""}`}
           onClick={() => setActiveTab("assessments")}
         >
-          📖Assessments
+          Assessments
         </button>
 
         <button
           className={`tab-btn ${activeTab === "reviews" ? "active" : ""}`}
           onClick={() => setActiveTab("reviews")}
         >
-          ⭐Reviews
+          Reviews
         </button>
       </div>
 
-      {/*CONTENT*/}
       <div className="course-modal-content">
 
         {activeTab === "reviews" && ( // REVIEWS TAB
@@ -231,29 +227,26 @@ function CoursePage() {
             <h3>Course Materials</h3>
 
             {selectedCourse.enrolledStudents?.includes(user.uid) ? (
-              selectedCourse.content && selectedCourse.content.length > 0 ? (
-                <div className="file-list student-file-list">
-                  {selectedCourse.content.map((file) => (
-                    <div key={file.id} className="file-item">
-                      {file.type === "quiz" ?
-                      <div>
-                        <p>{file.title}</p>
-                        <button onClick={() =>
-                          navigate(`/student/course/assessment/${file.id}`)
-                        }>Take Assessment</button>
-                      </div> 
-                      :
+              (() => {
+                // Filter out assessments - only show documents/files
+                const materials = selectedCourse.content?.filter(
+                  (file) => file.type !== "quiz" && file.type !== "test"
+                ) || [];
+                
+                return materials.length > 0 ? (
+                  <div className="file-list student-file-list">
+                    {materials.map((file) => (
+                      <div key={file.id} className="file-item">
                         <a href={file.fileUrl} target="_blank" rel="noreferrer">
-                        {file.title}
+                          {file.title}
                         </a>
-                      }
-                      
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="locked-text">No materials uploaded yet.</p>
-              )
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="locked-text">No materials uploaded yet.</p>
+                );
+              })()
             ) : (
               <p className="locked-text">
                 Enroll to unlock course materials.
@@ -267,7 +260,45 @@ function CoursePage() {
             <h3>Assessments</h3>
 
             {selectedCourse.enrolledStudents?.includes(user.uid) ? (
-              <p className="locked-text">No assessments yet.</p>
+              (() => {
+                // Filter only assessments (quiz and test)
+                const assessments = selectedCourse.content?.filter(
+                  (file) => file.type === "quiz" || file.type === "test"
+                ) || [];
+                
+                return assessments.length > 0 ? (
+                  <div className="file-list student-file-list">
+                    {assessments.map((assessment) => (
+                      <div key={assessment.id} className="file-item" style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        padding: "12px 0",
+                        borderBottom: "1px solid #eee"
+                      }}>
+                        <span>{assessment.title}</span>
+                        <button 
+                          onClick={() => navigate(`/student/course/assessment/${assessment.id}`)}
+                          style={{
+                            padding: "6px 12px",
+                            fontSize: "13px",
+                            background: "#000",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            marginLeft: "auto"
+                          }}
+                        >
+                          Take Assessment
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="locked-text">No assessments available yet.</p>
+                );
+              })()
             ) : (
               <p className="locked-text">
                 Enroll to unlock assessments.
