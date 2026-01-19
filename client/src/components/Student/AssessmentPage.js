@@ -241,7 +241,7 @@ function AssessmentPage () {
 
     function formatReview(){
         let reviewlist = []
-        for (let x = 0; x < userAnswerArray; x++){
+        for (let x = 0; x < userAnswerArray.length; x++){
             reviewlist.push(<li>
                 <p>Q{x}: {questionList[x].text}</p>
                 <p>You selected: {questionList[x].options[userAnswerArray[x]]}</p>
