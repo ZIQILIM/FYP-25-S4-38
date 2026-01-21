@@ -10,6 +10,8 @@ router.get("/getAllYourMsgs", messageCtrl.getMyMessages);
 
 router.post("/sendMessage", messageCtrl.sendMessage);
 
-router.get("/getMsgRecivers", messageCtrl.getReciverUser)
+router.get("/getMsgRecivers", messageCtrl.getReciverUser);
+
+router.post("/courseannouncement", messageCtrl.sendCourseAnnouncement);
 
 module.exports = router;

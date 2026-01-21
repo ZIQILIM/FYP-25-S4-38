@@ -16,9 +16,27 @@ class messagesController {
             });
         }
         catch(error){
-
+            next(error);
         }
     }
+
+    async sendCourseAnnouncement(req, res, next){
+        //send message to DB
+        let uid = req.user.uid;
+        let data = req.body.x;
+        try{
+            let result= await msgModel.sendMessageToDB(uid, data);
+
+            res.status(201).json({
+                success: true,
+                message: "Message sent successfully",
+            });
+        }
+        catch(error){
+            next(error);
+        }
+    }
+    
 
     async getMyMessages(req, res, next){
         //get any message with your UID as recipeint

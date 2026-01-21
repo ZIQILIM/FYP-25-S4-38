@@ -174,8 +174,62 @@ function InboxPage() {
                     </div>
                     ) }
                 
-                {activeTab === "messages" && <div>Messages Content</div>}
-                {activeTab === "announcement" && <div>Announcements Content</div>}
+                {activeTab === "messages" && <div>
+                    {
+                            isLoading === true ? (
+                                <p>Loading Messages...</p>
+                            ) : (
+                                <div>
+                                {allMessages.map((message) => {
+                                        return(
+                                            <div>
+                                                {
+                                                    message.sender_user_id === "SYSTEM_ANNOUNCEMENT" ? (
+                                                        <div></div>
+                                                    ) : (
+                                                        <span>
+                                                            <div>
+                                                                {message.subject}
+                                                                <button onClick={() => {setSelectedMessgae(message);setActiveModal("readMessage");setIsModalOpen(true);}}>Read</button>
+                                                            </div>
+                                                        </span>
+                                                    )
+                                                }
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            )
+                        }
+                    </div>}
+                {activeTab === "announcement" && <div>
+                    {
+                            isLoading === true ? (
+                                <p>Loading Messages...</p>
+                            ) : (
+                                <div>
+                                {allMessages.map((message) => {
+                                        return(
+                                            <div>
+                                                {
+                                                    message.sender_user_id === "SYSTEM_ANNOUNCEMENT" ? (
+                                                        <span>
+                                                            <div>
+                                                                {message.subject}
+                                                                <button onClick={() => {setSelectedMessgae(message);setActiveModal("readMessage");setIsModalOpen(true);}}>Read</button>
+                                                            </div>
+                                                        </span>
+                                                    ) : (
+                                                        <div></div>
+                                                    )
+                                                }
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            )
+                        }
+                    </div>}
             </div>
 
 

@@ -35,10 +35,6 @@ class messagesModel {
             console.log(doc.id, "=>", doc.data());
             x.push(doc.data());
         });
-
-
-        
-
         return x;
     }
 }
