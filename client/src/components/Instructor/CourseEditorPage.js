@@ -52,6 +52,8 @@ function CourseEditorPage() {
 
   const navigate = useNavigate();
 
+  const [announcementContent, setAnnouncementContent] = useState("");
+
   // === DATA FETCHING ===
   const fetchCourses = async () => {
     try {
@@ -141,10 +143,20 @@ function CourseEditorPage() {
     setIsModalOpen(true);
   };
 
+  const openAnnouncementModal = () => {
+    setModalType("course_announcement");
+    PullStudentsForAnnouncement();
+    setIsModalOpen(true);
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setModalLoading(false);
   };
+
+  const handleAnnouncementTextChange = event => {
+    setAnnouncementContent(event.target.value);
+  }
 
   // --- STUDENT HANDLERS ---
   const handleViewStudents = async () => {
@@ -165,6 +177,27 @@ function CourseEditorPage() {
       alert("Failed to fetch students");
     } finally {
       setModalLoading(false);
+    }
+  };
+
+  const PullStudentsForAnnouncement = async () => {
+    if (!selectedCourse) return;
+    //setModalLoading(true);
+    try {
+      const res = await authFetch(
+        `http://localhost:5000/api/instructors/students/${selectedCourse.id}`,
+        {},
+        user
+      );
+      if (res.success) {
+        setEnrolledStudents(res.data);
+        //setViewStudentsModalOpen(true);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to fetch students");
+    } finally {
+      //setModalLoading(false);
     }
   };
 
@@ -315,6 +348,36 @@ function CourseEditorPage() {
     }
   };
 
+  function forloopAnnouncement() {
+    enrolledStudents.forEach(element => {
+      handleSendAnnouncement(element.uid);
+    })
+  }
+
+  const handleSendAnnouncement = async (msgTarget) => {
+    let y = new Date();
+    let subject = selectedCourse.title + " Announcement"
+    let x = {
+      sender_user_id: "SYSTEM_ANNOUNCEMENT", 
+      reciver_user_id: msgTarget,
+      s_name: user.displayName,
+      subject: subject,
+      text: announcementContent,
+      sent_on: y,
+    }
+    
+    try{
+      await authFetch("http://localhost:5000/api/messages/courseannouncement", {method: "POST", body:JSON.stringify({x})}, user);
+    } catch (err)
+    {
+      console.error(err);
+      alert("Send Announcement failed");
+    }
+    finally{
+      closeModal();
+    }
+  }
+
   // Drag & Drop
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -420,7 +483,7 @@ function CourseEditorPage() {
             <button className="dash-btn">📊 Analyze Data</button>
           </div>
 
-          <button className="dash-btn btn-announce">
+          <button className="dash-btn btn-announce" onClick={openAnnouncementModal}>
             📢 Make Announcement
           </button>
         </div>
@@ -589,6 +652,23 @@ function CourseEditorPage() {
                       setFormData({ ...formData, description: e.target.value })
                     }
                   />
+
+                  <select
+                    className="modal-input"
+                    value={formData.category}
+                    onChange={(e) =>
+                      setFormData({ ...formData, category: e.target.value })
+                    }
+                  >
+                    <option value="English">English</option>
+                    <option value="Math">Math</option>
+                    <option value="Science">Science</option>
+                    <option value="IT">IT</option>
+                    <option value="CareerDevelopment">
+                      Career Development
+                    </option>
+                  </select>
+
                   <button
                     type="submit"
                     className="modal-btn"
@@ -790,6 +870,21 @@ function CourseEditorPage() {
                 </button>
               </div>
             )}
+            {/* 6. ANNOUNCEMENT*/}
+            {
+              modalType === "course_announcement" && (
+                <div>
+                  <h2>Make Announcement</h2>
+                  <input id = "announcementinput" onChange={handleAnnouncementTextChange}/>
+                  <button onClick={forloopAnnouncement}>
+                    Send
+                  </button>
+                  <button onClick={closeModal} className="text-btn">
+                    Cancel
+                  </button>
+                </div>
+              )
+            }
           </div>
         </div>
       )}

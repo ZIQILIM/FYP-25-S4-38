@@ -1,463 +1,435 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useEffect, useMemo, useState, useContext } from "react";
 import { AuthContext } from "../../auth/authContext";
 import { authFetch } from "../../services/api";
 
-import "../../CSS/CourseEditorPage.css"; // Reusing grid styles
-import "../../CSS/CoursePage.css";
+import "../../CSS/RewardStorePage.css";
 
-import qrcode from "../../images/placeholderQRCode.png"
+// Image imports
+import fairpriceImg from "../../images/Fairprice.jpg";
+import microsoftImg from "../../images/microsoft365.jpg";
+import qrcode from "../../images/placeholderQRCode.png";
+
+// Rewards data configuration
+const REWARDS_DATA = [
+  {
+    id: "5NTUC",
+    name: "$5 FairPrice Voucher",
+    description: "$5 NTUC FairPrice Voucher redeemable at FairPrice Supermarkets",
+    price: 50,
+    brand: "FairPrice",
+    brandColor: "#e31837",
+    category: "voucher",
+    imageUrl: fairpriceImg,
+  },
+  {
+    id: "10NTUC",
+    name: "$10 FairPrice Voucher",
+    description: "$10 NTUC FairPrice Voucher redeemable at FairPrice Supermarkets",
+    price: 100,
+    brand: "FairPrice",
+    brandColor: "#e31837",
+    category: "voucher",
+    imageUrl: fairpriceImg,
+  },
+  {
+    id: "1YOffice365",
+    name: "1 Year Microsoft 365",
+    description:
+      "1 year subscription to Microsoft 365 including Word, Excel, PowerPoint and more",
+    price: 500,
+    brand: "Microsoft",
+    brandColor: "#00a4ef",
+    category: "subscription",
+    imageUrl: microsoftImg,
+  },
+];
+
+const FILTERS = [
+  { key: "all", label: "All Rewards", icon: "" },
+  { key: "voucher", label: "Vouchers", icon: "🎫" },
+  { key: "subscription", label: "Subscriptions", icon: "📱" },
+];
 
 function RewardStorePage() {
-    const { user } = useContext(AuthContext); // get logged in use information
-    const [profile, setProfile] = useState(null);
-    const [gamification, setGamification] = useState(null);
-    const [rewardID, setRewardID] = useState("");
-    const [isModalOpen, setIsModalOpen] = useState(false); // controls popup visibility
-    const [loading, setLoading] = useState(true);
-    const [cfmMsg, setcfmMsg] = useState(false);
-    const [rewardDisplay, setrewardDisplay] = useState(false);
-    const [THistDisplay, setTHistDisplay] = useState(false);
-    const [urBrokelol, setBrokeness] = useState(null);
-    const [THistArray, setTHistArray] = useState(null);
+  const { user } = useContext(AuthContext);
 
-    //very stupid point increment
-    const [ten, setshite] = useState({points:10});
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState(null);
+  const [gamification, setGamification] = useState(null);
 
-    const redeemReward = async () => {
-        setrewardDisplay(true);
-        if(rewardID === "5NTUC")
-        {
-            try{
-                await authFetch("http://localhost:5000/api/students/changecurrency", {method: "POST", body:JSON.stringify({points:-50})}, user)
-            }catch (error){
-                console.error("Change currency error:", error);
-            }
-            try{
-                await authFetch("http://localhost:5000/api/students/updateTransactionHistory", {method: "POST", body: JSON.stringify({rewardID: rewardID})}, user)
-            }catch(error){
-                console.error("Update Transaction History error:", error);
-            }finally{
-                setLoading(true);
-                forceReloadData();
-            }
-        }
-        else if(rewardID === "10NTUC")
-        {
-            try{
-                await authFetch("http://localhost:5000/api/students/changecurrency", {method: "POST", body:JSON.stringify({points:-100})}, user)
-            }catch (error){
-                console.error("Change currency error:", error);
-            }
-            try{
-                await authFetch("http://localhost:5000/api/students/updateTransactionHistory", {method: "POST", body: JSON.stringify({rewardID: rewardID})}, user)
-            }catch(error){
-                console.error("Update Transaction History error:", error);
-            }finally{
-                setLoading(true);
-                forceReloadData();
-            }
-        }
-        else if (rewardID === "1YOffice365")
-        {
-            try{
-                await authFetch("http://localhost:5000/api/students/changecurrency", {method: "POST", body:JSON.stringify(ten)}, user)
-            }catch (error){
-                console.error("Change currency error:", error);
-            }
-            try{
-                await authFetch("http://localhost:5000/api/students/updateTransactionHistory", {method: "POST", body: JSON.stringify({rewardID: rewardID})}, user)
-            }catch(error){
-                console.error("Update Transaction History error:", error);
-            }finally{
-                setLoading(true);
-                forceReloadData();
-            }
-        }
-        setcfmMsg(false);
+  // UI state
+  const [activeFilter, setActiveFilter] = useState("all");
+
+  const [selectedReward, setSelectedReward] = useState(null);
+  const [modalStep, setModalStep] = useState(null);
+  const [insufficientFunds, setInsufficientFunds] = useState(false);
+  const [redeeming, setRedeeming] = useState(false);
+
+  const balance = gamification?.currency ?? 0;
+
+  const canAfford = (price) => balance >= price;
+
+  const resetModalState = () => {
+    setSelectedReward(null);
+    setModalStep(null);
+    setInsufficientFunds(false);
+    setRedeeming(false);
+  };
+
+  const openRewardDetail = (reward) => {
+    setSelectedReward(reward);
+    setInsufficientFunds(false);
+    setModalStep("detail");
+  };
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+
+      const identityRes = await authFetch(
+        "http://localhost:5000/api/auth/current-user",
+        { method: "GET" },
+        user
+      );
+
+      if (!identityRes?.success) return;
+
+      setProfile(identityRes.data);
+
+      if (identityRes.data.role === "student") {
+        const studentRes = await authFetch(
+          "http://localhost:5000/api/students/profile",
+          { method: "GET" },
+          user
+        );
+
+        if (studentRes?.success) setGamification(studentRes.data.gamification);
+      }
+    } catch (err) {
+      console.error("Load error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!user) return;
+    loadData();
+  }, [user]);
+
+  // Debug add currency (keep for testing; remove in production)
+  const debugAddCurrency = async () => {
+    try {
+      await authFetch(
+        "http://localhost:5000/api/students/changecurrency",
+        { method: "POST", body: JSON.stringify({ points: 100 }) },
+        user
+      );
+      await loadData();
+    } catch (err) {
+      console.error("Debug add currency error:", err);
+    }
+  };
+
+  const filteredRewards = useMemo(() => {
+    return REWARDS_DATA.filter((reward) => {
+      if (activeFilter === "all") return true;
+      return reward.category === activeFilter;
+    });
+  }, [activeFilter]);
+
+  const handleRedeemClick = () => {
+    if (!selectedReward) return;
+
+    if (!canAfford(selectedReward.price)) {
+      setInsufficientFunds(true);
+      return;
     }
 
-    const openRewardDetails = (rewardtag) => {
-        setRewardID(rewardtag);
-        setIsModalOpen(true);
+    setModalStep("confirm");
+  };
+
+  const confirmRedemption = async () => {
+    if (!selectedReward || redeeming) return;
+
+    try {
+      setRedeeming(true);
+
+      // Deduct currency
+      await authFetch(
+        "http://localhost:5000/api/students/changecurrency",
+        { method: "POST", body: JSON.stringify({ points: -selectedReward.price }) },
+        user
+      );
+
+      // Record transaction
+      await authFetch(
+        "http://localhost:5000/api/students/updateTransactionHistory",
+        { method: "POST", body: JSON.stringify({ rewardID: selectedReward.id }) },
+        user
+      );
+
+      await loadData();
+      setModalStep("result");
+    } catch (err) {
+      console.error("Redemption error:", err);
+      alert("Failed to redeem reward. Please try again.");
+    } finally {
+      setRedeeming(false);
     }
+  };
 
-    const debugaddpoints = async () => {
-        console.log(ten);
-        await authFetch("http://localhost:5000/api/students/changecurrency", {method: "POST", body:JSON.stringify(ten)}, user)
-        setLoading(true);
-        forceReloadData();
-    }
+  if (loading) {
+    return <div className="reward-loading">Loading Rewards Store...</div>;
+  }
 
-    function displayCfmMessage(){
-        let x = 0;
-        if(rewardID === "5NTUC")
-            x = 50;
-        if(rewardID === "10NTUC")
-            x=100;
-        if(rewardID==="1YOffice365")
-            x=500;
-        
-        if(checkvalue(x) === false){
-            setcfmMsg(true);
-        }
-        else{
-            console.log("Insufficeint Currency");
-        }
-        
-    }
+  return (
+    <div className="reward-store-page">
+      <div className="reward-store-header">
+        <div className="reward-header-content">
+          <h1>🎁 Rewards Store</h1>
+          <p>Redeem your hard-earned points for exciting prizes!</p>
+        </div>
 
-    const closeCfmMessage = () => {
-        setcfmMsg(false);
-    }
+        <div className="reward-balance-card">
+          <div className="balance-icon">💎</div>
+          <div className="balance-info">
+            <span className="balance-label">Your Balance</span>
+            <span className="balance-amount">{balance} Points</span>
+          </div>
+        </div>
+      </div>
 
-    const closeModal = () => {
-        setBrokeness(false);
-        setIsModalOpen(false);
-    }
+      <div className="reward-actions">
+        <button className="action-btn history-btn" onClick={() => setModalStep("history")}>
+          Transaction History
+        </button>
 
-    function checkvalue(price) {
-        setBrokeness(false);
-        console.log("Checking against account currency...");
-        console.log("Account Balance: " + gamification.currency + "Prize Cost: " + price);
-        if(gamification.currency < price){
-            setBrokeness(true);
-            return true;
-        }
-        else{
-            setBrokeness(false);
-            return false;
-        }
-    }
+        <button className="action-btn debug-btn" onClick={debugAddCurrency}>
+          🔧 Debug: +100 Points
+        </button>
+      </div>
 
-    const closeReward = () => {
-        setrewardDisplay(false);
-        setIsModalOpen(false);
-    }
+      <div className="reward-filters">
+        {FILTERS.map((f) => (
+          <button
+            key={f.key}
+            className={`filter-btn ${activeFilter === f.key ? "active" : ""}`}
+            onClick={() => setActiveFilter(f.key)}
+          >
+            {f.icon ? `${f.icon} ` : ""}
+            {f.label}
+          </button>
+        ))}
+      </div>
 
-    const openTHistory = () => {
-        setTHistDisplay(true);
-        setTHistArray(gamification.incentiveTransactionHistory);
-    }
+      <div className="rewards-grid">
+        {filteredRewards.map((reward) => {
+          const affordable = canAfford(reward.price);
 
-    const closeTHistory = () => {
-        setTHistDisplay(false);
-    }
+          return (
+            <div
+              key={reward.id}
+              className={`reward-card ${!affordable ? "unaffordable" : ""}`}
+              onClick={() => openRewardDetail(reward)}
+            >
+              <div
+                className="reward-brand-banner"
+                style={{ backgroundColor: reward.brandColor }}
+              >
+                <span className="brand-name">{reward.brand}</span>
+              </div>
 
-    const forceReloadData = async () => {
-        try {
-            // 1. Fetch User Identity & Role first
-            // Note: Your authController.getCurrentUser returns data directly in result.data
-            const identityRes = await authFetch(
-              "http://localhost:5000/api/auth/current-user",
-              { method: "GET" },
-              user
-            );
-    
-            if (identityRes.success) {
-              const userProfile = identityRes.data;
-              setProfile(userProfile);
-    
-              // 2. If Student, execute login logic to record daily login
-    
-              if (userProfile.role === "student") {
-    
-                // 3.fetch full Gamification Data
-                // We use the student specific route for this
-                const studentRes = await authFetch(
-                  "http://localhost:5000/api/students/profile",
-                  { method: "GET" },
-                  user
-                );
-    
-                if (studentRes.success) {
-                  // api/students/profile returns nested data: { profile, gamification }
-                  const backendGamification = studentRes.data.gamification;
-    
-                  setGamification(backendGamification);
-                }
-              }
-            }
-          } catch (error) {
-            console.error("Home page load error:", error);
-          } finally {
-            setLoading(false);
-          }
-    };
+              <div className="reward-image">
+                {reward.imageUrl ? (
+                  <img 
+                    src={reward.imageUrl}
+                    alt={reward.name}
+                    className="reward-img"
+                  />
+                ) : (
+                  <span className="reward-emoji">{reward.emoji}</span>
+                )}
+              </div>
 
-    useEffect(() => {
-        if (!user) return;
-    
-        const loadData = async () => {
-          try {
-            // 1. Fetch User Identity & Role first
-            // Note: Your authController.getCurrentUser returns data directly in result.data
-            const identityRes = await authFetch(
-              "http://localhost:5000/api/auth/current-user",
-              { method: "GET" },
-              user
-            );
-    
-            if (identityRes.success) {
-              const userProfile = identityRes.data;
-              setProfile(userProfile);
-    
-              // 2. If Student, execute login logic to record daily login
-    
-              if (userProfile.role === "student") {
-    
-                // 3.fetch full Gamification Data
-                // We use the student specific route for this
-                const studentRes = await authFetch(
-                  "http://localhost:5000/api/students/profile",
-                  { method: "GET" },
-                  user
-                );
-    
-                if (studentRes.success) {
-                  // api/students/profile returns nested data: { profile, gamification }
-                  const backendGamification = studentRes.data.gamification;
-    
-                  setGamification(backendGamification);
-                }
-              }
-            }
-          } catch (error) {
-            console.error("Account gamification load error:", error);
-          } finally {
-            setLoading(false);
-          }
-        };
-    
-        loadData();
-      }, [user]);
+              <div className="reward-info">
+                <h3 className="reward-name">{reward.name}</h3>
 
-      if (loading) return <div>Loading...</div>;
+                <div className="reward-price-row">
+                  <span className="reward-price">{reward.price} Points</span>
+                </div>
+              </div>
 
-    return(
-        <div className="course-page">
-            <h1>Rewards Store</h1>
-            <p>Redeem your points for prizes</p>
-            <p>
-                Your Balance: {gamification.currency}
-            </p>
-            <button onClick = {debugaddpoints}>
-                Debug: Add Currency
+              <button
+                className={`quick-redeem-btn ${!affordable ? "disabled" : ""}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openRewardDetail(reward);
+                }}
+              >
+                {affordable ? "Redeem Now" : "View Details"}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      {modalStep === "detail" && selectedReward && (
+        <div className="modal-overlay" onClick={resetModalState}>
+          <div className="reward-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={(e) => { e.stopPropagation(); resetModalState(); }}>
+              ✕
             </button>
-            <button onClick = {openTHistory}>
-                View Transaction History
-            </button>
-            <div className="courses-grid">
-                <div
-                    className="course-card"
-                    onClick={() => openRewardDetails("5NTUC")}
-                >
-                    <div
-                        className="course-card-image"
-                        style={{
-                        backgroundImage: `url('https://placehold.co/600x400')`,
-                        }}
-                    ></div>
-                    <div className="course-card-content">
-                        <h3>$5 FairPrice Voucher</h3>
-                    </div>
-                </div>
 
-
-                <div
-                    className="course-card"
-                    onClick={() => openRewardDetails("10NTUC")}
-                >
-                    <div
-                        className="course-card-image"
-                        style={{
-                        backgroundImage: `url('https://placehold.co/600x400')`,
-                        }}
-                    ></div>
-                    <div className="course-card-content">
-                        <h3>$10 FairPrice Voucher</h3>
-                    </div>
-                </div>
-
-                <div
-                    className="course-card"
-                    onClick={() => openRewardDetails("1YOffice365")}
-                >
-                    <div
-                        className="course-card-image"
-                        style={{
-                        backgroundImage: `url('https://placehold.co/600x400')`,
-                        }}
-                    ></div>
-                    <div className="course-card-content">
-                        <h3>1 Year Microsoft Office Subscription</h3>
-                    </div>
-                </div>
+            <div className="modal-reward-icon-top">
+              {selectedReward.imageUrl ? (
+                <img 
+                  src={selectedReward.imageUrl}
+                  alt={selectedReward.name}
+                  className="modal-reward-img"
+                />
+              ) : (
+                <span className="modal-emoji">{selectedReward.emoji}</span>
+              )}
             </div>
 
-            {isModalOpen ? (
-                <div className="modal-overlay">
-                        {rewardID === "5NTUC" && (
-                                <div className="course-modal-box">
-                                    <div className="course-modal-header"> 
-                                        <div className="course-title-row">
-                                            $5 FairPrice Voucher
-                                        </div>
-                                        <div className="course-desc">
-                                            $5 NTUC FairPrice Voucher redeemable at FiarPrice Supermarkets
-                                        </div>
-                                        {urBrokelol === true && (
-                                            <div className="no-monies-alert">
-                                                You have insufficient currency!
-                                            </div>
-                                        )}
-                                    </div>
-                                    
-                                    <div className="course-modal-footer">
-                                        <button className="modal-btn" onClick={displayCfmMessage}>
-                                            Redeem Reward (50)
-                                        </button>
-                                        <button className="text-btn" onClick={closeModal}>
-                                            Close
-                                        </button>
-                                    </div>
-                                </div>
-                            )
-                        }
-                        {rewardID === "10NTUC" && (
-                                <div className="course-modal-box">
-                                    <div className="course-modal-header"> 
-                                        <div className="course-title-row">
-                                            $10 FairPrice Voucher
-                                        </div>
-                                        <div className="course-desc">
-                                            $10 NTUC FairPrice Voucher redeemable at FiarPrice Supermarkets
-                                        </div>
-                                        {urBrokelol === true && (
-                                            <div className="no-monies-alert">
-                                                You have insufficient currency!
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="course-modal-footer">
-                                        <button className="modal-btn" onClick={displayCfmMessage}>
-                                            Redeem Reward (100)
-                                        </button>
-                                        <button className="text-btn" onClick={closeModal}>
-                                            Close
-                                        </button>
-                                    </div>
-                                </div>
-                            )
-                        }
-                        {rewardID === "1YOffice365" && (
-                                <div className="course-modal-box">
-                                    <div className="course-modal-header"> 
-                                        <div className="course-title-row">
-                                            1 Year Microsoft Office Subscription
-                                        </div>
-                                        <div className="course-desc">
-                                            1 year subscription to microsoft office.
-                                        </div>
-                                        {urBrokelol === true && (
-                                            <div className="no-monies-alert">
-                                                You have insufficient currency!
-                                            </div>
-                                        )}
-                                    </div>
-                                    
-                                    <div className="course-modal-footer">
-                                        <button className="modal-btn" onClick={displayCfmMessage}>
-                                            Redeem Reward (500)
-                                        </button>
-                                        <button className="text-btn" onClick={closeModal}>
-                                            Close
-                                        </button>
-                                    </div>
-                                </div>
-                            )
-                        }
-                </div>
-            ) : (null)}
-            {    
-                cfmMsg === true && (
-                    <div className="modal-overlay">
-                        <div className="course-modal-box">
-                                <div className="course-modal-header"> 
-                                    <div className="course-desc">
-                                        To proceede please click 'Confirm'
-                                    </div>
-                                </div>
-                            <div className="course-modal-footer">
-                                <button className="modal-btn" onClick={redeemReward}>
-                                    Confirm
-                                </button>
-                                <button className="modal-btn" onClick={closeCfmMessage}>
-                                    Close
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )
-                        
-            }
-            {
-                rewardDisplay === true && (
-                    <div className="modal-overlay">
-                        <div className="course-modal-box">
-                                <div className="course-modal-header">
-                                    <div className="course-title-row">
-                                            Your Prize
-                                    </div>
-                                    {
-                                        rewardID === "10NTUC" && (
-                                            <img src = {qrcode} alt = "qrcode"/>
-                                        )
-                                    }
-                                    {
-                                        rewardID === "5NTUC" && (
-                                            <img src = {qrcode} alt = "qrcode"/>
-                                        )
-                                    }
-                                </div>
-                            <div className="course-modal-footer">
-                                <button className="modal-btn" onClick={closeReward}>
-                                    Close
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
-            {
-                THistDisplay === true && (
-                    <div className="modal-overlay">
-                        <div className="course-modal-box">
-                                <div className="course-modal-header">
-                                    <div className="course-title-row">
-                                            Transaction History
-                                    </div>
-                                    {
-                                        gamification.incentiveTransactionHistory.map((entry) => (
-                                            <span>
-                                                <p>{entry.reward}</p>
-                                                <p>Redeemed on: {entry.dateRedeemed}</p>
-                                            </span>
-                                        )
+            <div className="modal-content">
+              <h2>{selectedReward.name}</h2>
+              <p className="modal-description">{selectedReward.description}</p>
 
-                                        )
-                                    }
-                                </div>
-                            <div className="course-modal-footer">
-                                <button className="modal-btn" onClick={closeTHistory}>
-                                    Close
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
+              <div className="modal-price-display">
+                <span className="price-tag">{selectedReward.price} Points</span>
+              </div>
+
+              {insufficientFunds && (
+                <div className="insufficient-funds-alert">
+                  ⚠️ Insufficient points! You need {selectedReward.price - balance} more
+                  points.
+                </div>
+              )}
+
+              <div className="modal-actions">
+                <button
+                  className={`redeem-btn ${
+                    !canAfford(selectedReward.price) ? "disabled" : ""
+                  }`}
+                  onClick={handleRedeemClick}
+                  disabled={!canAfford(selectedReward.price)}
+                >
+                  {canAfford(selectedReward.price)
+                    ? `Redeem for ${selectedReward.price} Points`
+                    : "Not Enough Points"}
+                </button>
+
+                <button className="cancel-btn" onClick={resetModalState}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-    );
+      )}
+
+      {modalStep === "confirm" && selectedReward && (
+        <div className="modal-overlay" onClick={() => setModalStep("detail")}>
+          <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Confirm Redemption</h2>
+
+            <p>
+              Redeem <strong>{selectedReward.name}</strong> for{" "}
+              <strong>{selectedReward.price} points</strong>?
+            </p>
+
+            <p className="balance-after">
+              Balance after: {balance - selectedReward.price} Points
+            </p>
+
+            <div className="confirm-actions">
+              <button
+                className="confirm-yes-btn"
+                onClick={confirmRedemption}
+                disabled={redeeming}
+              >
+                {redeeming ? "Redeeming..." : "✓ Yes, Redeem!"}
+              </button>
+
+              <button
+                className="confirm-no-btn"
+                onClick={() => setModalStep("detail")}
+                disabled={redeeming}
+              >
+                ✕ Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalStep === "result" && selectedReward && (
+        <div className="modal-overlay" onClick={resetModalState}>
+          <div className="result-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Congratulations!</h2>
+            <p>You have successfully redeemed:</p>
+            <h3 className="redeemed-item">{selectedReward.name}</h3>
+
+            <div className="qr-code-container">
+              <p className="qr-instruction">Scan this QR code to claim your reward:</p>
+              <img src={qrcode} alt="Redemption QR Code" className="qr-code-image" />
+            </div>
+
+            <button className="done-btn" onClick={resetModalState}>
+              Done
+            </button>
+          </div>
+        </div>
+      )}
+
+      {modalStep === "history" && (
+        <div className="modal-overlay" onClick={resetModalState}>
+          <div className="history-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={resetModalState}>
+              ✕
+            </button>
+
+            <h2>Transaction History</h2>
+
+            <div className="history-list">
+              {gamification?.incentiveTransactionHistory?.length > 0 ? (
+                gamification.incentiveTransactionHistory.map((entry, index) => {
+                  const rewardInfo = REWARDS_DATA.find((r) => r.id === entry.reward);
+
+                  return (
+                    <div key={index} className="history-item">
+
+                      <div className="history-details">
+                        <span className="history-reward-name">
+                          {rewardInfo?.name || entry.reward}
+                        </span>
+                        <span className="history-date">Redeemed on: {entry.dateRedeemed}</span>
+                      </div>
+
+                      <div className="history-points">
+                        -{rewardInfo?.price ?? "?"} pts
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="no-history">
+                  <span className="no-history-icon">📭</span>
+                  <p>No transactions yet. Start redeeming rewards!</p>
+                </div>
+              )}
+            </div>
+
+            <button className="close-history-btn" onClick={resetModalState}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default RewardStorePage;
