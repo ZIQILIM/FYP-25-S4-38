@@ -45,9 +45,9 @@ const REWARDS_DATA = [
 ];
 
 const FILTERS = [
-  { key: "all", label: "All Rewards", icon: "" },
-  { key: "voucher", label: "Vouchers", icon: "🎫" },
-  { key: "subscription", label: "Subscriptions", icon: "📱" },
+  { key: "all", label: "All Rewards" },
+  { key: "voucher", label: "Vouchers" },
+  { key: "subscription", label: "Subscriptions" },
 ];
 
 function RewardStorePage() {
@@ -206,7 +206,7 @@ function RewardStorePage() {
         </button>
 
         <button className="action-btn debug-btn" onClick={debugAddCurrency}>
-          🔧 Debug: +100 Points
+           +100 Points
         </button>
       </div>
 
