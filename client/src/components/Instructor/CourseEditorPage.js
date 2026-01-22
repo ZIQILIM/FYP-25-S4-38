@@ -54,6 +54,8 @@ function CourseEditorPage() {
 
   const [announcementContent, setAnnouncementContent] = useState("");
 
+  const [testGradeArray, setTestGradeArray] = useState([]);
+
   // === DATA FETCHING ===
   const fetchCourses = async () => {
     try {
@@ -154,6 +156,25 @@ function CourseEditorPage() {
     setModalLoading(false);
   };
 
+  function handleGradeTests(){
+    //setModalType("testlist");
+    PullStudentsForAnnouncement();
+    PullTestAttemptData();
+    setIsModalOpen(true);
+  }
+
+  function checkstring(x, y){
+    if(x === y)
+    {
+      console.log("Equal");
+      return true;
+    }
+    else{
+      console.log("Not Equal");
+      return false;
+    }
+  }
+
   const handleAnnouncementTextChange = event => {
     setAnnouncementContent(event.target.value);
   }
@@ -200,6 +221,20 @@ function CourseEditorPage() {
       //setModalLoading(false);
     }
   };
+
+  const PullTestAttemptData = async () => {
+    if (!selectedCourse) return;
+    try{
+      const res = await authFetch("http://localhost:5000/api/instructors/getalltestattempts", {}, user);
+      setTestGradeArray(res.data);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to fetch data");
+    }finally{
+      setModalType("testlist");
+    }
+    
+  }
 
   const handleAwardBadge = async (badgeName) => {
     if (!selectedStudentForBadge) return;
@@ -290,6 +325,8 @@ function CourseEditorPage() {
     navigate("/QuizEditorPage");
     setCourseQuiz(null);
   };
+
+  
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
@@ -481,6 +518,7 @@ function CourseEditorPage() {
               👥 View Students
             </button>
             <button className="dash-btn">📊 Analyze Data</button>
+            <button className="dash-btn" onClick={handleGradeTests}>📊 Grade Tests</button>
           </div>
 
           <button className="dash-btn btn-announce" onClick={openAnnouncementModal}>
@@ -723,6 +761,53 @@ function CourseEditorPage() {
                   ) : (
                     <p>No files uploaded yet.</p>
                   )}
+                </div>
+                <button onClick={closeModal} className="text-btn">
+                  Close
+                </button>
+              </div>
+            )}
+
+            {modalType === "testlist" && (
+              <div>
+                <h2>Grade Course Tests</h2>
+                <div>
+                  {selectedCourse.content.map((file) => (
+                      <div>
+                        {
+                          file.type === "test" ? (
+                            <div>
+                              <p>{file.title}</p>
+                              {
+                                //test data goes here
+                                testGradeArray.map((docs) => (
+                                <div>
+                                  {
+                                    file.id === docs.test_ID ? (
+                                      <div>
+                                          {
+                                            enrolledStudents.map((student)=>(
+                                              <div>
+                                              {student.uid === docs.user && (
+                                                <label>{student.displayName}</label>
+                                              )}
+                                              </div>
+                                            ))
+                                          }
+                                        <button onClick={()=> navigate(`/instructor/course/testgrading/${docs.id}`)}>Grade</button>
+                                      </div>
+                                    ) : (<div></div>)
+                                  }
+                                </div>
+                                ))
+                              }
+                            </div>
+                          ): (
+                            <div></div>
+                          )
+                        }
+                      </div>
+                ))}
                 </div>
                 <button onClick={closeModal} className="text-btn">
                   Close

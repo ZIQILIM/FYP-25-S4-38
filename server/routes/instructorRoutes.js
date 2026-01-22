@@ -52,4 +52,11 @@ router.delete(
 // GET /api/instructors/students/:courseId
 router.get("/students/:courseId", instructorController.getCourseStudents);
 
+router.get("/getalltestattempts", instructorController.getAllTestAttempts);
+router.get("/getallAssessments", instructorController.getAllAssessment);
+router.post("/uploadstudentgrade", instructorController.uploadStudentGrade);
+router.delete("/delete-gradeditem/:attemptId", instructorController.deleteGradedAttempt);
+
+
+
 module.exports = router;
