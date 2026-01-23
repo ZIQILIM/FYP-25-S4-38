@@ -56,5 +56,6 @@ router.post(
 
 router.post("/submitAssessmentAttempt", studentController.submitAttempt);
 router.post("/submitTestAttempt", studentController.submitTestAttempt);
+router.post("/hasdonegradedtest", studentController.checkIfTestAttempted);
 
 module.exports = router;

@@ -394,5 +394,25 @@ class StudentController {
       next(error);
     }
   }
+
+  async checkIfTestAttempted(req, res, next){
+    try{
+      const uid = req.user.uid;
+      const assID = req.body.assID;
+      
+
+      const outcome = await testAttemptModel.haspreviousattempt(uid, assID);
+
+      res.status(200).json({
+        success: true,
+        message: "Successfully submitted test attempt.",
+        data: {
+          outcome: outcome
+        }
+      });
+    }catch (error) {
+      next(error);
+    }
+  }
 }
 module.exports = new StudentController();

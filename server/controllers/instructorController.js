@@ -5,6 +5,8 @@
 const userModel = require("../models/userModel");
 const courseModel = require("../models/courseModel");
 const assessmentModel = require("../models/assessmentModel");
+const testAttemptModel = require("../models/testAttemptModel");
+const GradeModel = require("../models/gradeModel");
 
 class InstructorController {
   // [NEW] Get full details of a specific assessment
@@ -308,6 +310,69 @@ class InstructorController {
       next(error);
     }
   }
+
+  async getAllTestAttempts(req, res, next){
+    //const testId = req.body.testid;
+
+    const snapshot = await testAttemptModel.pullalldata();
+
+    if(snapshot.empty){
+      console.log("No documents found.")
+
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Found Documents",
+      data: snapshot,
+    });
+  }
+
+  async getAllAssessment(req, res, next) {
+      try {
+        //need to change to a function to get data from assessment table
+        //console.log(req);
+        const assessment = await assessmentModel.getAllAssessments();
+        res.status(200).json({
+          success: true,
+          data: assessment,
+        });
+      } catch (error) {
+        next(error);
+      }
+    }
+
+    async uploadStudentGrade(req, res, next){
+      try{
+        const studentId = req.body.sid;
+        const courseId = req.body.cid;
+        const testId = req.body.tid;
+        const data = req.body.newgrade;
+
+        await GradeModel.submitTestAttempt(studentId, courseId, testId, data);
+
+        res.status(200).json({
+          success: true,
+        });
+      }
+      catch (error) {
+        next(error);
+      }
+    }
+
+    async deleteGradedAttempt(req, res, next){
+      try {
+      const uid = req.user.uid;
+      const { attemptId } = req.params;
+      await testAttemptModel.deleteItem(attemptId);
+      res.status(200).json({
+        success: true,
+        message: `Attempt ${attemptId} deleted successfully by instructor ${uid}`,
+      });
+    } catch (error) {
+      next(error);
+    }
+    }
 }
 
 module.exports = new InstructorController();

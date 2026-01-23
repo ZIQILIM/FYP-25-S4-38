@@ -41,6 +41,8 @@ function AssessmentPage () {
 
     const [sendtesttodb, setSendTestToDB] = useState(false);
 
+    const [prevAttemptExists, setPAE] = useState(false);
+
     const handleRadioChange = (value) => {
         setSelectedValue(value);
     };
@@ -74,9 +76,26 @@ function AssessmentPage () {
             console.error("Error fetching courses:", error);
         }
         finally{
-            setLoading(false);
+            //setLoading(false);
+            checkforprevAttempt();
         }
     }
+
+    const checkforprevAttempt = async () => {
+        const res = await authFetch("http://localhost:5000/api/students/hasdonegradedtest",
+            {method: "POST", body:JSON.stringify({assID: assessmentId})}, user
+        );
+        if(res.success){
+            if(res.data.outcome === false){
+                setLoading(false);
+            }
+            else{
+                //alr attempted b4
+                setPAE(true);
+            }
+        }
+    }
+
     useEffect(() => {
         //fetch assessment from DB
         
@@ -269,7 +288,6 @@ function AssessmentPage () {
             let singleQnData = {qId: i, timeSpent: elapsedtimeperQn[i], selected: userAnswerArray[i]}
             qngradeData.push(singleQnData);
         }
-        setAttemptData({assessmentId: assessmentId,score: 0, timeTaken: eTotalTime, answers: qngradeData})
     }
 
     function markAssessment(){
@@ -332,6 +350,14 @@ function AssessmentPage () {
         setEnd(true);
         //setMarkedAlr(true);
     }
+
+    if(loading && prevAttemptExists) return (
+        <div>
+            <h3>{wholeAssignment.title}</h3>
+            <p>You have already attempted this test.</p>
+            <button className="modal-btn" onClick={goBackToCourse} >← Back to Courses</button>
+        </div> 
+    )
 
     if (loading) return <div>Loading assessment...</div>;
 
