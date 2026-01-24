@@ -293,95 +293,99 @@ function CoursePage() {
 
             {/* CONTENT */}
             <div className="course-modal-content">
-              {/* === REVIEWS TAB === */}
+              {/* === REVIEWS TAB (IMPROVED) === */}
               {activeTab === "reviews" && (
                 <>
-                  <h3>Reviews</h3>
+                  <h3 className="reviews-section-title">Reviews</h3>
+                  
+                  {/* Reviews List */}
                   <div className="reviews-scroll">
-                    {selectedCourse.reviews &&
-                    selectedCourse.reviews.length > 0 ? (
+                    {selectedCourse.reviews && selectedCourse.reviews.length > 0 ? (
                       selectedCourse.reviews.map((rev, idx) => (
                         <div key={idx} className="review-card">
-                          <strong>{rev.rating} ⭐</strong> – {rev.description}
-                          <div
-                            style={{
-                              fontSize: "12px",
-                              color: "#888",
-                              marginTop: "4px",
-                            }}
-                          >
-                            - {rev.studentName}
+                          <div className="review-header">
+                            <div className="review-author">
+                              <div className="review-avatar">
+                                {rev.studentName ? rev.studentName.charAt(0).toUpperCase() : "?"}
+                              </div>
+                              <span className="review-author-name">{rev.studentName}</span>
+                            </div>
+                            <div className="review-rating">
+                              <span>⭐</span>
+                              <span>{rev.rating}</span>
+                            </div>
                           </div>
+                          <p className="review-text">{rev.description}</p>
                         </div>
                       ))
                     ) : (
-                      <p className="locked-text">No reviews yet.</p>
+                      <div className="no-reviews">
+                        <p className="no-reviews-text">No reviews yet.</p>
+                      </div>
                     )}
                   </div>
 
-                  {/* REVIEW FORM (Locked/Unlocked) */}
                   {selectedCourse.enrolledStudents?.includes(user.uid) && (
-                    <div
-                      style={{
-                        marginTop: "20px",
-                        padding: "15px",
-                        background: "#f8f9fa",
-                        borderRadius: "8px",
-                      }}
-                    >
+                    <>
                       {progress.isCompleted ? (
-                        <>
-                          <h4>Write a Review</h4>
-                          <select
-                            value={reviewForm.rating}
-                            onChange={(e) =>
-                              setReviewForm({
-                                ...reviewForm,
-                                rating: e.target.value,
-                              })
-                            }
-                            style={{ marginBottom: "10px" }}
-                          >
-                            {[5, 4, 3, 2, 1].map((n) => (
-                              <option key={n} value={n}>
-                                {n} Stars
-                              </option>
-                            ))}
-                          </select>
-                          <textarea
-                            style={{ width: "100%" }}
-                            placeholder="Review..."
-                            value={reviewForm.description}
-                            onChange={(e) =>
-                              setReviewForm({
-                                ...reviewForm,
-                                description: e.target.value,
-                              })
-                            }
-                          />
+                        <div className="review-form-container">
+                          <h4 className="review-form-title">Write a Review</h4>
+                          
+                          <div className="review-form-group">
+                            <label className="review-form-label">Rating</label>
+                            <select
+                              className="review-rating-select"
+                              value={reviewForm.rating}
+                              onChange={(e) =>
+                                setReviewForm({
+                                  ...reviewForm,
+                                  rating: e.target.value,
+                                })
+                              }
+                            >
+                              {[5, 4, 3, 2, 1].map((n) => (
+                                <option key={n} value={n}>
+                                  {n} Star{n > 1 ? "s" : ""} {"⭐".repeat(n)}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="review-form-group">
+                            <label className="review-form-label">Your Review</label>
+                            <textarea
+                              className="review-textarea"
+                              placeholder="Share your experience with this course..."
+                              value={reviewForm.description}
+                              onChange={(e) =>
+                                setReviewForm({
+                                  ...reviewForm,
+                                  description: e.target.value,
+                                })
+                              }
+                            />
+                          </div>
+
                           <button
-                            className="modal-btn"
+                            className="review-submit-btn"
                             onClick={handleReviewSubmit}
                             disabled={reviewSubmitting}
                           >
-                            Submit
+                            {reviewSubmitting ? "Submitting..." : "Submit Review"}
                           </button>
-                        </>
+                        </div>
                       ) : (
-                        <div style={{ textAlign: "center", color: "#7f8c8d" }}>
-                          <span style={{ fontSize: "20px" }}>🔒</span>
-                          <p>
-                            <strong>
-                              Complete all materials to unlock reviews.
-                            </strong>
+                        <div className="review-locked">
+                          <div className="review-locked-icon">🔒</div>
+                          <p className="review-locked-title">
+                            Complete all materials to unlock reviews
                           </p>
-                          <p style={{ fontSize: "12px" }}>
-                            You have viewed {progress.viewedItems.length} of{" "}
-                            {selectedCourse.content?.length || 0} items.
+                          <p className="review-locked-progress">
+                            Progress: {progress.viewedItems.length} / {selectedCourse.content?.length || 0} items completed
                           </p>
                         </div>
                       )}
-                    </div>
+                    </>
                   )}
                 </>
               )}
