@@ -155,7 +155,7 @@
   font-size: 13px;
   font-weight: 600;
   color: #fff;
-  background: rgb(145, 142, 142);
+  background: #1a1a2e;
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -163,5 +163,5 @@
 }
 
 .file-item button:hover {
-  background: rgb(114, 112, 112);
+  background: #16213e;
 }
