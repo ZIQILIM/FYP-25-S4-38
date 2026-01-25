@@ -12,11 +12,11 @@ import { Link, resolvePath, useNavigate, useLocation } from "react-router-dom";
 import BADGE_LIBRARY from "../../services/badgeConfig.js";
 
 const courseColors = [
-  "linear-gradient(135deg, rgba(255,0,0,0.5) 0%, rgba(255,0,0,0.25) 100%)",
-  "linear-gradient(135deg, rgba(0,255,0,0.45) 0%, rgba(0,255,0,0.2) 100%)",
-  "linear-gradient(135deg, rgba(255,255,0,0.5) 0%, rgba(255,255,0,0.25) 100%)",
-  "linear-gradient(135deg, rgba(0,0,255,0.5) 0%, rgba(0,0,255,0.25) 100%)",
-  "linear-gradient(135deg, rgba(245,165,0,0.5) 0%, rgba(245,165,0,0.25) 100%)",
+  "#FF6B6B",
+  "#4ECDC4", 
+  "#FFE66D",
+  "#A8E6CF", 
+  "#FFB347", 
 ];
 
 function CourseEditorPage() {
