@@ -52,9 +52,13 @@ class ReviewModel {
   // 3. Get reviews for a course by courseId
   async getReviewsByCourseId(courseId) {
     try {
-      const snapshot = await this.collection
+      /*const snapshot = await this.collection
         .where("courseId", "==", courseId)
         .orderBy("createdAt", "desc")
+        .get();*/
+
+        const snapshot = await this.collection
+        .where("courseId", "==", courseId)
         .get();
 
       if (snapshot.empty) return [];

@@ -414,5 +414,40 @@ class StudentController {
       next(error);
     }
   }
+
+  async getallgradesbyCID(req, res, next)
+  {
+    try{
+      const { courseId } = req.params;
+      const result = await gradeModel.getGradeByCourseId(courseId);
+
+      res.status(200).json({
+        success: true,
+        message: "Successfully retreived leaderboard.",
+        data: {
+          outcome: result
+        }
+      });
+    }catch (error) {
+      next(error);
+    }
+  }
+
+  async getallgradestagtoSID(req, res, next)
+  {
+    try{
+      const result = await gradeModel.getAllGradesTagToSID();
+
+      res.status(200).json({
+        success: true,
+        message: "Successfully retreived leaderboard.",
+        data: {
+          outcome: result
+        }
+      });
+    }catch (error) {
+      next(error);
+    }
+  }
 }
 module.exports = new StudentController();

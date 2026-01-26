@@ -49,6 +49,9 @@ router.post("/mark-viewed", studentController.markContentAsViewed);
 
 router.get("/internships", studentController.getAllInternships);
 
+router.get("/getallgrades", studentController.getallgradestagtoSID);
+router.get("/getgradesbycid/:courseId", studentController.getallgradesbyCID);
+
 router.post(
   "/updateTransactionHistory",
   studentController.updateIncentiveTransactionHistory

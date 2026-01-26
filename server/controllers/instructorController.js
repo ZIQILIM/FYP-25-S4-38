@@ -177,7 +177,7 @@ class InstructorController {
 
   async createAssessment(req, res, next) {
     try {
-      const { courseId, title, type, questions, timeLimit, totalPoints } =
+      const { courseId, title, type, questions, timeLimit, totalPoints, weightage } =
         req.body;
 
       // 1. SAVE HEAVY DATA: Create the document in 'assessments' collection
@@ -187,6 +187,7 @@ class InstructorController {
         questions,
         timeLimit,
         totalPoints,
+        weightage,
       });
 
       // 2. SAVE REFERENCE: Add a "shortcut" to the 'courses' collection so it shows up in editing/deleting courses
