@@ -11,13 +11,7 @@ import { Link, resolvePath, useNavigate, useLocation } from "react-router-dom";
 // If it is in 'config', change this to: "../../config/badgeConfig"
 import BADGE_LIBRARY from "../../services/badgeConfig.js";
 
-const courseColors = [
-  "#FF6B6B",
-  "#4ECDC4", 
-  "#FFE66D",
-  "#A8E6CF", 
-  "#FFB347", 
-];
+const courseColors = ["#FF6B6B", "#4ECDC4", "#FFE66D", "#A8E6CF", "#FFB347"];
 
 function CourseEditorPage() {
   const { user } = useContext(AuthContext);
@@ -62,7 +56,7 @@ function CourseEditorPage() {
       const res = await authFetch(
         "http://localhost:5000/api/instructors/my-courses",
         {},
-        user
+        user,
       );
       if (res.success) setCourses(res.data);
 
@@ -84,7 +78,7 @@ function CourseEditorPage() {
   useEffect(() => {
     if (courses.length > 0 && location.state?.courseIdToOpen) {
       const foundCourse = courses.find(
-        (c) => c.id === location.state.courseIdToOpen
+        (c) => c.id === location.state.courseIdToOpen,
       );
       if (foundCourse) {
         setSelectedCourse(foundCourse);
@@ -102,7 +96,7 @@ function CourseEditorPage() {
       const res = await authFetch(
         `http://localhost:5000/api/instructors/assessment/${assessmentId}`,
         {},
-        user
+        user,
       );
       if (res.success) {
         setViewingAssessment(res.data);
@@ -156,28 +150,26 @@ function CourseEditorPage() {
     setModalLoading(false);
   };
 
-  function handleGradeTests(){
+  function handleGradeTests() {
     //setModalType("testlist");
     PullStudentsForAnnouncement();
     PullTestAttemptData();
     setIsModalOpen(true);
   }
 
-  function checkstring(x, y){
-    if(x === y)
-    {
+  function checkstring(x, y) {
+    if (x === y) {
       console.log("Equal");
       return true;
-    }
-    else{
+    } else {
       console.log("Not Equal");
       return false;
     }
   }
 
-  const handleAnnouncementTextChange = event => {
+  const handleAnnouncementTextChange = (event) => {
     setAnnouncementContent(event.target.value);
-  }
+  };
 
   // --- STUDENT HANDLERS ---
   const handleViewStudents = async () => {
@@ -187,7 +179,7 @@ function CourseEditorPage() {
       const res = await authFetch(
         `http://localhost:5000/api/instructors/students/${selectedCourse.id}`,
         {},
-        user
+        user,
       );
       if (res.success) {
         setEnrolledStudents(res.data);
@@ -208,7 +200,7 @@ function CourseEditorPage() {
       const res = await authFetch(
         `http://localhost:5000/api/instructors/students/${selectedCourse.id}`,
         {},
-        user
+        user,
       );
       if (res.success) {
         setEnrolledStudents(res.data);
@@ -224,17 +216,20 @@ function CourseEditorPage() {
 
   const PullTestAttemptData = async () => {
     if (!selectedCourse) return;
-    try{
-      const res = await authFetch("http://localhost:5000/api/instructors/getalltestattempts", {}, user);
+    try {
+      const res = await authFetch(
+        "http://localhost:5000/api/instructors/getalltestattempts",
+        {},
+        user,
+      );
       setTestGradeArray(res.data);
     } catch (error) {
       console.error(error);
       alert("Failed to fetch data");
-    }finally{
+    } finally {
       setModalType("testlist");
     }
-    
-  }
+  };
 
   const handleAwardBadge = async (badgeName) => {
     if (!selectedStudentForBadge) return;
@@ -248,7 +243,7 @@ function CourseEditorPage() {
             badgeName: badgeName,
           }),
         },
-        user
+        user,
       );
       alert(`Badge '${badgeName}' awarded!`);
       setSelectedStudentForBadge(null);
@@ -270,7 +265,7 @@ function CourseEditorPage() {
           method: "POST",
           body: JSON.stringify(formData),
         },
-        user
+        user,
       );
 
       if (res.success) {
@@ -292,7 +287,7 @@ function CourseEditorPage() {
     try {
       const storageRef = ref(
         storage,
-        `courses/${selectedCourse.id}/${uploadFile.name}`
+        `courses/${selectedCourse.id}/${uploadFile.name}`,
       );
       await uploadBytes(storageRef, uploadFile);
       const url = await getDownloadURL(storageRef);
@@ -308,7 +303,7 @@ function CourseEditorPage() {
             type: uploadFile.type,
           }),
         },
-        user
+        user,
       );
 
       setModalStep(2);
@@ -326,8 +321,6 @@ function CourseEditorPage() {
     setCourseQuiz(null);
   };
 
-  
-
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     setModalLoading(true);
@@ -338,7 +331,7 @@ function CourseEditorPage() {
           method: "PUT",
           body: JSON.stringify({ ...formData, courseId: selectedCourse.id }),
         },
-        user
+        user,
       );
       closeModal();
       await fetchCourses();
@@ -357,7 +350,7 @@ function CourseEditorPage() {
       await authFetch(
         `http://localhost:5000/api/instructors/delete-course/${selectedCourse.id}`,
         { method: "DELETE" },
-        user
+        user,
       );
       setSelectedCourse(null);
       closeModal();
@@ -376,7 +369,7 @@ function CourseEditorPage() {
       await authFetch(
         `http://localhost:5000/api/instructors/remove-content/${selectedCourse.id}/${contentId}`,
         { method: "DELETE" },
-        user
+        user,
       );
       await fetchCourses();
     } catch (err) {
@@ -386,34 +379,36 @@ function CourseEditorPage() {
   };
 
   function forloopAnnouncement() {
-    enrolledStudents.forEach(element => {
+    enrolledStudents.forEach((element) => {
       handleSendAnnouncement(element.uid);
-    })
+    });
   }
 
   const handleSendAnnouncement = async (msgTarget) => {
     let y = new Date();
-    let subject = selectedCourse.title + " Announcement"
+    let subject = selectedCourse.title + " Announcement";
     let x = {
-      sender_user_id: "SYSTEM_ANNOUNCEMENT", 
+      sender_user_id: "SYSTEM_ANNOUNCEMENT",
       reciver_user_id: msgTarget,
       s_name: user.displayName,
       subject: subject,
       text: announcementContent,
       sent_on: y,
-    }
-    
-    try{
-      await authFetch("http://localhost:5000/api/messages/courseannouncement", {method: "POST", body:JSON.stringify({x})}, user);
-    } catch (err)
-    {
+    };
+
+    try {
+      await authFetch(
+        "http://localhost:5000/api/messages/courseannouncement",
+        { method: "POST", body: JSON.stringify({ x }) },
+        user,
+      );
+    } catch (err) {
       console.error(err);
       alert("Send Announcement failed");
-    }
-    finally{
+    } finally {
       closeModal();
     }
-  }
+  };
 
   // Drag & Drop
   const handleDragOver = (e) => {
@@ -518,10 +513,15 @@ function CourseEditorPage() {
               👥 View Students
             </button>
             <button className="dash-btn">📊 Analyze Data</button>
-            <button className="dash-btn" onClick={handleGradeTests}>📊 Grade Tests</button>
+            <button className="dash-btn" onClick={handleGradeTests}>
+              📊 Grade Tests
+            </button>
           </div>
 
-          <button className="dash-btn btn-announce" onClick={openAnnouncementModal}>
+          <button
+            className="dash-btn btn-announce"
+            onClick={openAnnouncementModal}
+          >
             📢 Make Announcement
           </button>
         </div>
@@ -719,7 +719,10 @@ function CourseEditorPage() {
                 <h3 style={{ marginTop: "20px", textAlign: "left" }}>
                   Attached Files
                 </h3>
-                <div className="file-list">
+                <div
+                  className="file-list"
+                  style={{ maxHeight: "300px", overflowY: "auto" }}
+                >
                   {selectedCourse.content &&
                   selectedCourse.content.length > 0 ? (
                     selectedCourse.content.map((file) => (
@@ -773,41 +776,45 @@ function CourseEditorPage() {
                 <h2>Grade Course Tests</h2>
                 <div>
                   {selectedCourse.content.map((file) => (
-                      <div>
-                        {
-                          file.type === "test" ? (
-                            <div>
-                              <p>{file.title}</p>
-                              {
-                                //test data goes here
-                                testGradeArray.map((docs) => (
-                                <div>
-                                  {
-                                    file.id === docs.test_ID ? (
+                    <div>
+                      {file.type === "test" ? (
+                        <div>
+                          <p>{file.title}</p>
+                          {
+                            //test data goes here
+                            testGradeArray.map((docs) => (
+                              <div>
+                                {file.id === docs.test_ID ? (
+                                  <div>
+                                    {enrolledStudents.map((student) => (
                                       <div>
-                                          {
-                                            enrolledStudents.map((student)=>(
-                                              <div>
-                                              {student.uid === docs.user && (
-                                                <label>{student.displayName}</label>
-                                              )}
-                                              </div>
-                                            ))
-                                          }
-                                        <button onClick={()=> navigate(`/instructor/course/testgrading/${docs.id}`)}>Grade</button>
+                                        {student.uid === docs.user && (
+                                          <label>{student.displayName}</label>
+                                        )}
                                       </div>
-                                    ) : (<div></div>)
-                                  }
-                                </div>
-                                ))
-                              }
-                            </div>
-                          ): (
-                            <div></div>
-                          )
-                        }
-                      </div>
-                ))}
+                                    ))}
+                                    <button
+                                      onClick={() =>
+                                        navigate(
+                                          `/instructor/course/testgrading/${docs.id}`,
+                                        )
+                                      }
+                                    >
+                                      Grade
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div></div>
+                                )}
+                              </div>
+                            ))
+                          }
+                        </div>
+                      ) : (
+                        <div></div>
+                      )}
+                    </div>
+                  ))}
                 </div>
                 <button onClick={closeModal} className="text-btn">
                   Close
@@ -956,20 +963,19 @@ function CourseEditorPage() {
               </div>
             )}
             {/* 6. ANNOUNCEMENT*/}
-            {
-              modalType === "course_announcement" && (
-                <div>
-                  <h2>Make Announcement</h2>
-                  <input id = "announcementinput" onChange={handleAnnouncementTextChange}/>
-                  <button onClick={forloopAnnouncement}>
-                    Send
-                  </button>
-                  <button onClick={closeModal} className="text-btn">
-                    Cancel
-                  </button>
-                </div>
-              )
-            }
+            {modalType === "course_announcement" && (
+              <div>
+                <h2>Make Announcement</h2>
+                <input
+                  id="announcementinput"
+                  onChange={handleAnnouncementTextChange}
+                />
+                <button onClick={forloopAnnouncement}>Send</button>
+                <button onClick={closeModal} className="text-btn">
+                  Cancel
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

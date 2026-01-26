@@ -59,7 +59,7 @@ function AssessmentEditorPage() {
       finalWeightage = parseFloat(weightage);
       if (isNaN(finalWeightage) || finalWeightage <= 0) {
         return alert(
-          "Please provide a valid weightage for the graded test: 0.01% to 100.00%"
+          "Please provide a valid weightage for the graded test: 0.01% to 100.00%",
         );
       }
     } else {
@@ -81,7 +81,7 @@ function AssessmentEditorPage() {
             questions,
           }),
         },
-        user
+        user,
       );
 
       alert("Assessment Created!");
@@ -190,7 +190,8 @@ function AssessmentEditorPage() {
               </button>
             </div>
             <div style={{ fontSize: "12px", color: "#666", marginTop: "5px" }}>
-              Answer: {q.options[q.correct]}
+              Answer:{" "}
+              {q.type === "short_answer" ? q.modelAnswer : q.options[q.correct]}
             </div>
           </div>
         ))}
