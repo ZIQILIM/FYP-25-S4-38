@@ -380,11 +380,11 @@ class StudentController {
       const uid = req.user.uid;
       const courseid = req.body.CID;
       const assID = req.body.AID;
-      const datatobesent = req.body.datatobesent;
+      const qnData = req.body.qnData;
 
       console.log(JSON.stringify(req.body));
 
-      await testAttemptModel.submitTestData(uid, assID, courseid, datatobesent);
+      await testAttemptModel.submitTestData(uid, assID, courseid, qnData);
 
       res.status(200).json({
         success: true,
@@ -408,6 +408,41 @@ class StudentController {
         message: "Successfully submitted test attempt.",
         data: {
           outcome: outcome
+        }
+      });
+    }catch (error) {
+      next(error);
+    }
+  }
+
+  async getallgradesbyCID(req, res, next)
+  {
+    try{
+      const { courseId } = req.params;
+      const result = await gradeModel.getGradeByCourseId(courseId);
+
+      res.status(200).json({
+        success: true,
+        message: "Successfully retreived leaderboard.",
+        data: {
+          outcome: result
+        }
+      });
+    }catch (error) {
+      next(error);
+    }
+  }
+
+  async getallgradestagtoSID(req, res, next)
+  {
+    try{
+      const result = await gradeModel.getAllGradesTagToSID();
+
+      res.status(200).json({
+        success: true,
+        message: "Successfully retreived leaderboard.",
+        data: {
+          outcome: result
         }
       });
     }catch (error) {

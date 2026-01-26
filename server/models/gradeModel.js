@@ -25,6 +25,50 @@ class GradeModel {
     }
   }
 
+  async getGradeByCourseId(courseId){
+    try{
+      const snapshot = await this.collection.where("courseId", "==", courseId).get();
+
+      if (snapshot.empty) {
+          console.log("No matching documents.");
+          return;
+      }
+
+      snapshot.docs.forEach((doc) => {
+          //there should only be one
+          console.log(doc.id, "=>", doc.data());
+          //xx = doc.id;
+      });
+
+      return snapshot.docs.map((doc) => ({ id: doc.data().studentId, ...doc.data() }));
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async getAllGradesTagToSID()
+  {
+    //get all grades and map to student id
+    try{
+      const snapshot = await this.collection.get();
+
+      if (snapshot.empty) {
+          console.log("No matching documents.");
+          return;
+      }
+
+      snapshot.forEach((doc) => {
+          //there should only be one
+          console.log(doc.id, "=>", doc.data());
+          //xx = doc.id;
+      });
+
+      return snapshot.docs.map((doc) => ({ id: doc.data().studentId, ...doc.data() }));
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+
   async submitTestAttempt(studentId, courseId, assessmentId, datatobesent) {
     try {
       // RESULT DATA STRUCTURE

@@ -120,7 +120,18 @@ function TestGradingPage() {
 
     function submitdatatodb() {
         updatedata();
+        generateWeightedGrade();
         setPTSDB(true);
+    }
+
+    function generateWeightedGrade(){
+        let changeddata = datathatwillbesent;
+        //first convert grade to 100%
+        let convertedgrade = changeddata.score / testqns.totalPoints;
+        convertedgrade *= 100;
+        convertedgrade *= (testqns.weightage/ 100);
+        changeddata.weightedGrade = convertedgrade;
+        setDTWBS(changeddata);
     }
 
     const sendStudentGrade = async () => {

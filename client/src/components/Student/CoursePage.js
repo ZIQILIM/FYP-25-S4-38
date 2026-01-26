@@ -26,6 +26,8 @@ function CoursePage() {
   });
   const [reviewForm, setReviewForm] = useState({ rating: 5, description: "" });
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [selectedCourseGrades, setSCG] = useState([]);
+  const [RawselectedCourseGrades, setRSCG] = useState([]);
 
   // 1. Fetch Courses
   const fetchCourses = async () => {
@@ -87,12 +89,57 @@ function CoursePage() {
   const openCourseDetails = (course) => {
     const enrolled = course.enrolledStudents?.includes(user?.uid);
     setSelectedCourse(course);
+    getcoursestudentgrade(course.id);
     // If enrolled, go to materials. If not, reviews.
     setActiveTab(enrolled ? "materials" : "reviews");
     setIsModalOpen(true);
     // Reset progress state slightly to avoid flickering old data
     setProgress({ viewedItems: [], isCompleted: false });
   };
+
+  const getcoursestudentgrade = async (courseID) => {
+    let res = null;
+    const x = await authFetch("http://localhost:5000/api/messages/getMsgRecivers", {method: "GET"}, user);
+    try{
+      res = await authFetch(`http://localhost:5000/api/students/getgradesbycid/${courseID}`, {method: "GET"}, user);
+      setRSCG(res.data);
+    }catch (error) {
+      alert("Failed to get grades.");
+    }
+    finally{
+      formatLeaderboard(res.data, x.data.users);
+    }
+  }
+
+  function formatLeaderboard(thing, ppl){
+    let x = thing;
+    let formattedgrade = [];
+    for(let i = 0; i < x.outcome.length; i++){
+      let z = x.outcome[i].results;
+      let num = 0;
+      for(let j = 0; j < z.length; j++)
+      {
+        if(z[j].weightedGrade !== undefined)
+        {
+          num += z[j].weightedGrade;
+        }
+      }
+      if(num !== 0)
+      {
+        let name = "";
+        for (let i = 0; i < ppl.length; i++)
+        {
+          if(ppl[i].uid === x.outcome[i].studentId)
+          {
+            name = ppl[i].displayName;
+            break;
+          }
+        }
+        formattedgrade.push({s_name: name, LboardScore: num})
+      }
+    }
+    setSCG(formattedgrade);
+  }
 
   const handleEnroll = async () => {
     if (!window.confirm(`Enroll in "${selectedCourse.title}"?`)) return;
@@ -288,6 +335,12 @@ function CoursePage() {
                 onClick={() => setActiveTab("reviews")}
               >
                 Reviews
+              </button>
+              <button
+                className={`tab-btn ${activeTab === "leaderboard" ? "active" : ""}`}
+                onClick={() => setActiveTab("leaderboard")}
+              >
+                Leaderboard
               </button>
             </div>
 
@@ -497,6 +550,20 @@ function CoursePage() {
                   ) : (
                     <p className="locked-text">Enroll to unlock assessments.</p>
                   )}
+                </>
+              )}
+
+              {/* === LEADERBOARD TAB === */}
+              {activeTab === "leaderboard" && (
+                <>
+                  <h3>Leaderboard</h3>
+                  {
+                    selectedCourseGrades.map(
+                      (leaderboard) => (
+                        <span>{leaderboard.s_name} Score: {leaderboard.LboardScore}</span>
+                      )
+                    )
+                  }
                 </>
               )}
             </div>
