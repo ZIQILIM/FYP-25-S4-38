@@ -5,6 +5,8 @@ import { authFetch } from "../../services/api";
 import "../../CSS/CourseEditorPage.css";
 import "../../CSS/CoursePage.css";
 
+const courseColors = ["#FF6B6B", "#4ECDC4", "#FFE66D", "#A8E6CF", "#FFB347"];
+
 function CoursePage() {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -35,7 +37,7 @@ function CoursePage() {
       const res = await authFetch(
         "http://localhost:5000/api/students/courses",
         {},
-        user
+        user,
       );
       if (res.success) setCourses(res.data);
     } catch (error) {
@@ -72,7 +74,7 @@ function CoursePage() {
             const res = await authFetch(
               `http://localhost:5000/api/students/course-progress/${selectedCourse.id}`,
               {},
-              user
+              user,
             );
             if (res.success) setProgress(res.data);
           }
@@ -99,43 +101,45 @@ function CoursePage() {
 
   const getcoursestudentgrade = async (courseID) => {
     let res = null;
-    const x = await authFetch("http://localhost:5000/api/messages/getMsgRecivers", {method: "GET"}, user);
-    try{
-      res = await authFetch(`http://localhost:5000/api/students/getgradesbycid/${courseID}`, {method: "GET"}, user);
+    const x = await authFetch(
+      "http://localhost:5000/api/messages/getMsgRecivers",
+      { method: "GET" },
+      user,
+    );
+    try {
+      res = await authFetch(
+        `http://localhost:5000/api/students/getgradesbycid/${courseID}`,
+        { method: "GET" },
+        user,
+      );
       setRSCG(res.data);
-    }catch (error) {
+    } catch (error) {
       alert("Failed to get grades.");
-    }
-    finally{
+    } finally {
       formatLeaderboard(res.data, x.data.users);
     }
-  }
+  };
 
-  function formatLeaderboard(thing, ppl){
+  function formatLeaderboard(thing, ppl) {
     let x = thing;
     let formattedgrade = [];
-    for(let i = 0; i < x.outcome.length; i++){
+    for (let i = 0; i < x.outcome.length; i++) {
       let z = x.outcome[i].results;
       let num = 0;
-      for(let j = 0; j < z.length; j++)
-      {
-        if(z[j].weightedGrade !== undefined)
-        {
+      for (let j = 0; j < z.length; j++) {
+        if (z[j].weightedGrade !== undefined) {
           num += z[j].weightedGrade;
         }
       }
-      if(num !== 0)
-      {
+      if (num !== 0) {
         let name = "";
-        for (let i = 0; i < ppl.length; i++)
-        {
-          if(ppl[i].uid === x.outcome[i].studentId)
-          {
+        for (let i = 0; i < ppl.length; i++) {
+          if (ppl[i].uid === x.outcome[i].studentId) {
             name = ppl[i].displayName;
             break;
           }
         }
-        formattedgrade.push({s_name: name, LboardScore: num})
+        formattedgrade.push({ s_name: name, LboardScore: num });
       }
     }
     setSCG(formattedgrade);
@@ -151,7 +155,7 @@ function CoursePage() {
           method: "POST",
           body: JSON.stringify({ courseId: selectedCourse.id }),
         },
-        user
+        user,
       );
 
       if (res.success) {
@@ -185,7 +189,7 @@ function CoursePage() {
             method: "POST",
             body: JSON.stringify({ courseId: selectedCourse.id, contentId }),
           },
-          user
+          user,
         );
       } catch (e) {
         console.error(e);
@@ -215,7 +219,7 @@ function CoursePage() {
             review_description: reviewForm.description,
           }),
         },
-        user
+        user,
       );
       alert("Review Submitted!");
       fetchCourses(); // Refresh to see updated reviews
@@ -243,7 +247,7 @@ function CoursePage() {
       <p>Explore and enroll in courses to boost your skills.</p>
 
       <div className="courses-grid">
-        {sortedCourses.map((course) => {
+        {sortedCourses.map((course, index) => {
           const isEnrolled = course.enrolledStudents?.includes(user.uid);
           return (
             <div
@@ -257,11 +261,17 @@ function CoursePage() {
               <div
                 className="course-card-image"
                 style={{
-                  backgroundImage: `url('https://placehold.co/600x400?text=${course.title.charAt(
-                    0
-                  )}')`,
+                  background: courseColors[index % courseColors.length],
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "72px",
+                  fontWeight: "800",
+                  color: "white",
                 }}
-              ></div>
+              >
+                {course.title.charAt(0).toUpperCase()}
+              </div>
               <div className="course-card-content">
                 {isEnrolled && (
                   <span
@@ -350,18 +360,23 @@ function CoursePage() {
               {activeTab === "reviews" && (
                 <>
                   <h3 className="reviews-section-title">Reviews</h3>
-                  
+
                   {/* Reviews List */}
                   <div className="reviews-scroll">
-                    {selectedCourse.reviews && selectedCourse.reviews.length > 0 ? (
+                    {selectedCourse.reviews &&
+                    selectedCourse.reviews.length > 0 ? (
                       selectedCourse.reviews.map((rev, idx) => (
                         <div key={idx} className="review-card">
                           <div className="review-header">
                             <div className="review-author">
                               <div className="review-avatar">
-                                {rev.studentName ? rev.studentName.charAt(0).toUpperCase() : "?"}
+                                {rev.studentName
+                                  ? rev.studentName.charAt(0).toUpperCase()
+                                  : "?"}
                               </div>
-                              <span className="review-author-name">{rev.studentName}</span>
+                              <span className="review-author-name">
+                                {rev.studentName}
+                              </span>
                             </div>
                             <div className="review-rating">
                               <span>⭐</span>
@@ -383,7 +398,7 @@ function CoursePage() {
                       {progress.isCompleted ? (
                         <div className="review-form-container">
                           <h4 className="review-form-title">Write a Review</h4>
-                          
+
                           <div className="review-form-group">
                             <label className="review-form-label">Rating</label>
                             <select
@@ -405,7 +420,9 @@ function CoursePage() {
                           </div>
 
                           <div className="review-form-group">
-                            <label className="review-form-label">Your Review</label>
+                            <label className="review-form-label">
+                              Your Review
+                            </label>
                             <textarea
                               className="review-textarea"
                               placeholder="Share your experience with this course..."
@@ -424,7 +441,9 @@ function CoursePage() {
                             onClick={handleReviewSubmit}
                             disabled={reviewSubmitting}
                           >
-                            {reviewSubmitting ? "Submitting..." : "Submit Review"}
+                            {reviewSubmitting
+                              ? "Submitting..."
+                              : "Submit Review"}
                           </button>
                         </div>
                       ) : (
@@ -434,7 +453,9 @@ function CoursePage() {
                             Complete all materials to unlock reviews
                           </p>
                           <p className="review-locked-progress">
-                            Progress: {progress.viewedItems.length} / {selectedCourse.content?.length || 0} items completed
+                            Progress: {progress.viewedItems.length} /{" "}
+                            {selectedCourse.content?.length || 0} items
+                            completed
                           </p>
                         </div>
                       )}
@@ -453,7 +474,7 @@ function CoursePage() {
                       <div className="file-list student-file-list">
                         {selectedCourse.content.map((file) => {
                           const isViewed = progress.viewedItems.includes(
-                            file.id
+                            file.id,
                           );
                           return (
                             <div
@@ -482,7 +503,7 @@ function CoursePage() {
                                     handleContentClick(
                                       file.id,
                                       "file",
-                                      file.fileUrl
+                                      file.fileUrl,
                                     )
                                   }
                                   style={{
@@ -528,23 +549,27 @@ function CoursePage() {
                               Start
                             </button>
                             {/* 2. NEW: AI Analysis Button */}
-                          <button 
-                            onClick={() => navigate(`/analytics/${selectedCourse.id}/${file.id}`)}
-                            style={{ 
-                              backgroundColor: '#6c5ce7', 
-                              color: 'white',
-                              border: 'none',
-                              padding: '5px 10px',
-                              borderRadius: '4px',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            📊 Analyze Progress
-                          </button>
+                            <button
+                              onClick={() =>
+                                navigate(
+                                  `/analytics/${selectedCourse.id}/${file.id}`,
+                                )
+                              }
+                              style={{
+                                backgroundColor: "#6c5ce7",
+                                color: "white",
+                                border: "none",
+                                padding: "5px 10px",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                              }}
+                            >
+                              📊 Analyze Progress
+                            </button>
                           </div>
                         ))}
                       {!selectedCourse.content?.some(
-                        (f) => f.type === "quiz" || f.type === "test"
+                        (f) => f.type === "quiz" || f.type === "test",
                       ) && <p>No assessments in this course.</p>}
                     </div>
                   ) : (
@@ -557,13 +582,11 @@ function CoursePage() {
               {activeTab === "leaderboard" && (
                 <>
                   <h3>Leaderboard</h3>
-                  {
-                    selectedCourseGrades.map(
-                      (leaderboard) => (
-                        <span>{leaderboard.s_name} Score: {leaderboard.LboardScore}</span>
-                      )
-                    )
-                  }
+                  {selectedCourseGrades.map((leaderboard) => (
+                    <span>
+                      {leaderboard.s_name} Score: {leaderboard.LboardScore}
+                    </span>
+                  ))}
                 </>
               )}
             </div>
