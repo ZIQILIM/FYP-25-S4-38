@@ -113,7 +113,12 @@ function CourseEditorPage() {
 
   const openCreateModal = () => {
     setModalType("create_course");
-    setFormData({ title: "", description: "", category: "IT" });
+    setFormData({
+      title: "",
+      description: "",
+      category: "IT",
+      subjectLevel: "H1",
+    });
     setModalStep(1);
     setIsModalOpen(true);
   };
@@ -130,6 +135,8 @@ function CourseEditorPage() {
     setFormData({
       title: selectedCourse.title,
       description: selectedCourse.description,
+      category: selectedCourse.category || "IT",
+      subjectLevel: selectedCourse.subjectLevel || "H1",
     });
     setIsModalOpen(true);
   };
@@ -546,33 +553,61 @@ function CourseEditorPage() {
                 />
 
                 {/* [NEW] Category Dropdown */}
-                <div style={{ marginBottom: "15px" }}>
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: "5px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Category
-                  </label>
-                  <select
-                    className="modal-input"
-                    value={formData.category}
-                    onChange={(e) =>
-                      setFormData({ ...formData, category: e.target.value })
-                    }
-                  >
-                    <option value="English">English</option>
-                    <option value="Math">Math</option>
-                    <option value="Science">Science</option>
-                    <option value="IT">IT</option>
-                    <option value="CareerDevelopment">
-                      Career Development
-                    </option>
-                  </select>
+                <div
+                  style={{ marginBottom: "15px", display: "flex", gap: "10px" }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <label
+                      style={{
+                        display: "block",
+                        marginBottom: "5px",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Category
+                    </label>
+                    <select
+                      className="modal-input"
+                      value={formData.category}
+                      onChange={(e) =>
+                        setFormData({ ...formData, category: e.target.value })
+                      }
+                    >
+                      <option value="English">English</option>
+                      <option value="Math">Math</option>
+                      <option value="Science">Science</option>
+                      <option value="IT">IT</option>
+                      <option value="CareerDevelopment">
+                        Career Development
+                      </option>
+                    </select>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label
+                      style={{
+                        display: "block",
+                        marginBottom: "5px",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Level
+                    </label>
+                    <select
+                      className="modal-input"
+                      value={formData.subjectLevel}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          subjectLevel: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="H1">H1 - Beginner</option>
+                      <option value="H2">H2 - Intermediate</option>
+                      <option value="H3">H3 - Advanced</option>
+                    </select>
+                  </div>
                 </div>
-
                 <textarea
                   className="modal-input modal-textarea"
                   placeholder="Description"
@@ -706,7 +741,31 @@ function CourseEditorPage() {
                       Career Development
                     </option>
                   </select>
-
+                  <div style={{ flex: 1 }}>
+                    <label
+                      style={{
+                        display: "block",
+                        marginBottom: "5px",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Level
+                    </label>
+                    <select
+                      className="modal-input"
+                      value={formData.subjectLevel}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          subjectLevel: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="H1">H1 - Beginner</option>
+                      <option value="H2">H2 - Intermediate</option>
+                      <option value="H3">H3 - Advanced</option>
+                    </select>
+                  </div>
                   <button
                     type="submit"
                     className="modal-btn"

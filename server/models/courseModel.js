@@ -12,6 +12,7 @@ class CourseModel {
       const docRef = await this.collection.add({
         ...courseData,
         category: courseData.category || "General",
+        subjectLevel: courseData.subjectLevel || "H1",
         rating: 0, //start at 0 stars
         ratingCount: 0, //track how many ratings received
         content: [], // Array to store lessons/files
@@ -84,7 +85,7 @@ class CourseModel {
 
       const currentContent = doc.data().content || [];
       const updatedContent = currentContent.filter(
-        (item) => item.id !== contentId
+        (item) => item.id !== contentId,
       );
 
       await courseRef.update({
@@ -117,8 +118,8 @@ class CourseModel {
     }
   }
 
-  async getAllCoursesforPostings(){
-    try{
+  async getAllCoursesforPostings() {
+    try {
       const snapshot = await this.collection.get();
       const courses = snapshot.docs.map((doc) => ({
         id: doc.id,
