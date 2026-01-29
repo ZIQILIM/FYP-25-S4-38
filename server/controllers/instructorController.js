@@ -107,7 +107,7 @@ class InstructorController {
   // Create a new empty course
   async createCourse(req, res, next) {
     try {
-      const { title, description, category } = req.body;
+      const { title, description, category, subjectLevel } = req.body;
       const instructorId = req.user.uid;
 
       if (!title || !description || !category) {
@@ -134,6 +134,7 @@ class InstructorController {
         title,
         description,
         category,
+        subjectLevel: subjectLevel || "H1",
         instructorId,
         instructorName, // <--- Now this is guaranteed to be a string
       });
@@ -177,8 +178,15 @@ class InstructorController {
 
   async createAssessment(req, res, next) {
     try {
-      const { courseId, title, type, questions, timeLimit, totalPoints, weightage } =
-        req.body;
+      const {
+        courseId,
+        title,
+        type,
+        questions,
+        timeLimit,
+        totalPoints,
+        weightage,
+      } = req.body;
 
       // 1. SAVE HEAVY DATA: Create the document in 'assessments' collection
       const assessment = await assessmentModel.createAssessment(courseId, {
@@ -250,8 +258,14 @@ class InstructorController {
   async updateCourse(req, res, next) {
     try {
       const uid = req.user.uid;
-      const { courseId, title, description } = req.body;
-      await courseModel.updateCourse(courseId, { title, description });
+      const { courseId, title, description, category, subjectLevel } = req.body;
+
+      await courseModel.updateCourse(courseId, {
+        title,
+        description,
+        category,
+        subjectLevel,
+      });
 
       res.status(200).json({
         success: true,
@@ -300,7 +314,7 @@ class InstructorController {
       // remove content reference from course
       const updatedContent = await courseModel.removeContent(
         courseId,
-        contentId
+        contentId,
       );
       res.status(200).json({
         success: true,
@@ -312,14 +326,13 @@ class InstructorController {
     }
   }
 
-  async getAllTestAttempts(req, res, next){
+  async getAllTestAttempts(req, res, next) {
     //const testId = req.body.testid;
 
     const snapshot = await testAttemptModel.pullalldata();
 
-    if(snapshot.empty){
-      console.log("No documents found.")
-
+    if (snapshot.empty) {
+      console.log("No documents found.");
     }
 
     res.status(200).json({
@@ -330,73 +343,74 @@ class InstructorController {
   }
 
   async getAllAssessment(req, res, next) {
-      try {
-        //need to change to a function to get data from assessment table
-        //console.log(req);
-        const assessment = await assessmentModel.getAllAssessments();
-        res.status(200).json({
-          success: true,
-          data: assessment,
-        });
-      } catch (error) {
-        next(error);
-      }
+    try {
+      //need to change to a function to get data from assessment table
+      //console.log(req);
+      const assessment = await assessmentModel.getAllAssessments();
+      res.status(200).json({
+        success: true,
+        data: assessment,
+      });
+    } catch (error) {
+      next(error);
     }
+  }
 
-    async uploadStudentGrade(req, res, next){
-      try{
-        const studentId = req.body.sid;
-        const courseId = req.body.cid;
-        const testId = req.body.tid;
-        const data = req.body.newgrade;
+  async uploadStudentGrade(req, res, next) {
+    try {
+      const studentId = req.body.sid;
+      const courseId = req.body.cid;
+      const testId = req.body.tid;
+      const data = req.body.newgrade;
 
-        await GradeModel.submitTestAttempt(studentId, courseId, testId, data);
+      await GradeModel.submitTestAttempt(studentId, courseId, testId, data);
 
-        res.status(200).json({
-          success: true,
-        });
-      }
-      catch (error) {
-        next(error);
-      }
+      res.status(200).json({
+        success: true,
+      });
+    } catch (error) {
+      next(error);
     }
+  }
 
-    async FetchSingleGrade(req, res, next){
-      try{
-        const studentId = req.body.sid;
-        const courseId = req.body.cid;
+  async FetchSingleGrade(req, res, next) {
+    try {
+      const studentId = req.body.sid;
+      const courseId = req.body.cid;
 
-        const data = await GradeModel.getSingleStudentGrade(studentId, courseId);
+      const data = await GradeModel.getSingleStudentGrade(studentId, courseId);
 
-        res.status(200).json({
-          success: true,
-          data: data,
-        });
-      }
-      catch (error) {
-        next(error);
-      }
+      res.status(200).json({
+        success: true,
+        data: data,
+      });
+    } catch (error) {
+      next(error);
     }
+  }
 
-    async calculateTotalGrade(req, res, next){
-      try{
-        const studentId = req.body.sid;
-        const courseId = req.body.cid;
-        const newTotalGrade = req.body.newTG;
+  async calculateTotalGrade(req, res, next) {
+    try {
+      const studentId = req.body.sid;
+      const courseId = req.body.cid;
+      const newTotalGrade = req.body.newTG;
 
-        await GradeModel.UpdateSingleStudentGrade(studentId, courseId, newTotalGrade);
+      await GradeModel.UpdateSingleStudentGrade(
+        studentId,
+        courseId,
+        newTotalGrade,
+      );
 
-        res.status(200).json({
-          success: true,
-        });
-      }
-      catch (error) {
-        next(error);
-      }
+      res.status(200).json({
+        success: true,
+      });
+    } catch (error) {
+      next(error);
     }
+  }
 
-    async deleteGradedAttempt(req, res, next){
-      try {
+  async deleteGradedAttempt(req, res, next) {
+    try {
       const uid = req.user.uid;
       const { attemptId } = req.params;
       await testAttemptModel.deleteItem(attemptId);
@@ -407,8 +421,7 @@ class InstructorController {
     } catch (error) {
       next(error);
     }
-    }
-    
+  }
 }
 
 module.exports = new InstructorController();

@@ -89,6 +89,7 @@ function CoursePage() {
   // --- Handlers ---
 
   const openCourseDetails = (course) => {
+    if (course.isLocked) return;
     const enrolled = course.enrolledStudents?.includes(user?.uid);
     setSelectedCourse(course);
     getcoursestudentgrade(course.id);
@@ -121,18 +122,22 @@ function CoursePage() {
   };
 
   function formatLeaderboard(thing, ppl) {
+    // FIX: Safely handle missing/undefined data
+    if (!thing || !thing.outcome || !Array.isArray(thing.outcome)) {
+      setSCG([]);
+      return;
+    }
     let x = thing;
     let formattedgrade = [];
     for (let i = 0; i < x.outcome.length; i++) {
       let z = x.outcome[i].results;
       let num = 0;
-      if(z !== undefined)
-      {
+      if (z !== undefined) {
         for (let j = 0; j < z.length; j++) {
-        if (z[j].weightedGrade !== undefined) {
-          num += z[j].weightedGrade;
+          if (z[j].weightedGrade !== undefined) {
+            num += z[j].weightedGrade;
+          }
         }
-      }
         if (num !== 0) {
           let name = "";
           for (let z = 0; z < ppl.length; z++) {
@@ -144,7 +149,6 @@ function CoursePage() {
           formattedgrade.push({ s_name: name, LboardScore: num });
         }
       }
-      
     }
     let y = formattedgrade.sort((a, b) => b.LboardScore - a.LboardScore);
     setSCG(y);
@@ -254,28 +258,50 @@ function CoursePage() {
       <div className="courses-grid">
         {sortedCourses.map((course, index) => {
           const isEnrolled = course.enrolledStudents?.includes(user.uid);
+          const isLocked = course.isLocked; //flag from server
           return (
             <div
               key={course.id}
-              className="course-card"
+              className={`course-card ${isLocked ? "locked-course" : ""}`} // Add CSS class for greyscale/opacity
               onClick={() => openCourseDetails(course)}
               style={{
                 border: isEnrolled ? "2px solid #4cd137" : "1px solid #ddd",
+                opacity: isLocked ? 0.6 : 1,
+                cursor: isLocked ? "not-allowed" : "pointer",
+                filter: isLocked ? "grayscale(100%)" : "none",
               }}
             >
               <div
                 className="course-card-image"
                 style={{
-                  background: courseColors[index % courseColors.length],
+                  background: isLocked
+                    ? "#95a5a6"
+                    : courseColors[index % courseColors.length],
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: "72px",
                   fontWeight: "800",
                   color: "white",
+                  position: "relative",
                 }}
               >
-                {course.title.charAt(0).toUpperCase()}
+                {isLocked ? "🔒" : course.title.charAt(0).toUpperCase()}
+
+                {/* LEVEL BADGE */}
+                <span
+                  style={{
+                    position: "absolute",
+                    bottom: "10px",
+                    right: "10px",
+                    fontSize: "14px",
+                    background: "rgba(0,0,0,0.5)",
+                    padding: "2px 8px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  {course.subjectLevel || "H1"}
+                </span>
               </div>
               <div className="course-card-content">
                 {isEnrolled && (
@@ -290,6 +316,21 @@ function CoursePage() {
                     }}
                   >
                     ENROLLED
+                  </span>
+                )}
+                {isLocked && (
+                  <span
+                    style={{
+                      backgroundColor: "#e74c3c",
+                      color: "white",
+                      padding: "2px 8px",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      marginLeft: isEnrolled ? "5px" : "0",
+                    }}
+                  >
+                    LOCKED
                   </span>
                 )}
                 <h3>{course.title}</h3>
