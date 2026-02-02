@@ -54,6 +54,7 @@ router.get("/students/:courseId", instructorController.getCourseStudents);
 
 router.get("/getalltestattempts", instructorController.getAllTestAttempts);
 router.get("/getallAssessments", instructorController.getAllAssessment);
+router.get("/getCourseById/:cid", instructorController.getCourseData);
 router.post("/uploadstudentgrade", instructorController.uploadStudentGrade);
 router.delete("/delete-gradeditem/:attemptId", instructorController.deleteGradedAttempt);
 router.post("/fetchsinglestudentgrade", instructorController.FetchSingleGrade);

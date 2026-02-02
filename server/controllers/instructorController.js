@@ -422,6 +422,19 @@ class InstructorController {
       next(error);
     }
   }
+
+  async getCourseData(req, res, next){
+    try{
+      const { cid } = req.params;
+      const data = await courseModel.getCourseById(cid);
+      res.status(200).json({
+        success: true,
+        data: data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new InstructorController();
