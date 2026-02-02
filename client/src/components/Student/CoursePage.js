@@ -624,19 +624,69 @@ function CoursePage() {
                 </>
               )}
 
-              {/* === LEADERBOARD TAB === */}
-              {activeTab === "leaderboard" && (
-                <>
-                  <h3>Leaderboard</h3>
-                  {selectedCourseGrades.map((leaderboard) => (
-                    <div>
-                      <span>
-                        {leaderboard.s_name} Score: {leaderboard.LboardScore}
-                      </span>
-                    </div>
-                  ))}
-                </>
-              )}
+                {/* === LEADERBOARD TAB === */}
+                {activeTab === "leaderboard" && (
+                  <div className="leaderboard-container">
+                    <h3>Leaderboard</h3>
+                    
+                    {selectedCourseGrades.length === 0 ? (
+                      <div className="leaderboard-empty">
+                        <p style={{ fontSize: "48px", margin: "0 0 10px 0" }}>🏆</p>
+                        <p style={{ fontSize: "16px", fontWeight: "600", color: "#666" }}>
+                          No scores yet
+                        </p>
+                        <p style={{ fontSize: "14px", color: "#999" }}>
+                          Complete assessments to appear on the leaderboard!
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="leaderboard-list">
+                        {selectedCourseGrades.map((leaderboard, index) => {
+                          const rank = index + 1;
+                          const isCurrentUser = leaderboard.s_name === user?.displayName;
+                          
+                          // Determine rank class
+                          let rankClass = "rank-other";
+                          if (rank === 1) rankClass = "rank-1";
+                          else if (rank === 2) rankClass = "rank-2";
+                          else if (rank === 3) rankClass = "rank-3";
+                          
+                          // Medal for top 3
+                          let medal = "";
+                          if (rank === 1) medal = "🥇";
+                          else if (rank === 2) medal = "🥈";
+                          else if (rank === 3) medal = "🥉";
+                          
+                          return (
+                            <div 
+                              key={index} 
+                              className={`leaderboard-item ${isCurrentUser ? "current-user" : ""}`}
+                            >
+                              <div className={`leaderboard-rank ${rankClass}`}>
+                                {rank}
+                              </div>
+                              
+                              <div className="leaderboard-student-info">
+                                <p className="leaderboard-student-name">
+                                  {medal && <span className="rank-medal">{medal}</span>}
+                                  {leaderboard.s_name}
+                                  {isCurrentUser && " (You)"}
+                                </p>
+                              </div>
+                              
+                              <div className="leaderboard-score">
+                                <span className="leaderboard-score-value">
+                                  {leaderboard.LboardScore.toFixed(1)}
+                                </span>
+                                <span className="leaderboard-score-label">Points</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
             </div>
 
             {/* FOOTER */}
