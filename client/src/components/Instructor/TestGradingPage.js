@@ -204,7 +204,7 @@ function TestGradingPage() {
         }
     }
 
-    const benchmarkannouncement = async (data) => {
+    function benchmarkannouncement (data)  {
         let body = "";
         let subject = "";
         let willpost = false;
@@ -253,7 +253,15 @@ function TestGradingPage() {
             }
         }
         if(willpost === true){
-            try{
+            announcebenchmark(subject, body);
+        }
+        else{
+            announceNewGrade();
+        }
+    }
+
+    const announcebenchmark = async (subject, body) => {
+        try{
                 //system announcement to student
                 let y = new Date();
     
@@ -274,10 +282,6 @@ function TestGradingPage() {
             finally{
                 announceNewGrade();
             }
-        }
-        else{
-            announceNewGrade();
-        }
     }
 
     function CalculateGrade(xxx) {
