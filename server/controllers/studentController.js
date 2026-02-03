@@ -8,7 +8,7 @@ const courseModel = require("../models/courseModel");
 const internshipModel = require("../models/internshipModel");
 const assessmentModel = require("../models/assessmentModel");
 const gradeModel = require("../models/gradeModel");
-const testAttemptModel = require("../models/testAttemptModel.js")
+const testAttemptModel = require("../models/testAttemptModel.js");
 
 // NEW for reviews
 const reviewModel = require("../models/reviewModel.js");
@@ -56,7 +56,7 @@ class StudentController {
     }
   }
 
-  // [UPDATED] Submit Review 
+  // [UPDATED] Submit Review
   async submitCourseReview(req, res, next) {
     try {
       const { courseId, review_rating, review_description } = req.body;
@@ -68,42 +68,60 @@ class StudentController {
       const totalItems = course.content ? course.content.length : 0;
 
       if (viewedItems.length < totalItems) {
-        return res.status(403).json({ 
-          success: false, 
-          message: "Locked: You must complete all course materials before reviewing." 
+        return res.status(403).json({
+          success: false,
+          message:
+            "Locked: You must complete all course materials before reviewing.",
         });
       }
 
       // 2. Validate Inputs
       if (!review_rating || !review_description) {
-         return res.status(400).json({ success: false, message: "Rating and description required" });
+        return res
+          .status(400)
+          .json({ success: false, message: "Rating and description required" });
       }
 
       // 3. Duplicate Check
-      const alreadyReviewed = await reviewModel.hasStudentReviewed(courseId, studentId);
-      if (alreadyReviewed) return res.status(400).json({ success: false, message: "You have already reviewed this course." });
+      const alreadyReviewed = await reviewModel.hasStudentReviewed(
+        courseId,
+        studentId,
+      );
+      if (alreadyReviewed)
+        return res.status(400).json({
+          success: false,
+          message: "You have already reviewed this course.",
+        });
 
       // 4. Save Review
       const studentProfile = await userModel.getUserById(studentId);
-      const studentName = studentProfile ? `${studentProfile.firstName} ${studentProfile.lastName}` : "Student";
+      const studentName = studentProfile
+        ? `${studentProfile.firstName} ${studentProfile.lastName}`
+        : "Student";
 
       await reviewModel.addReview({
         courseId,
         studentId,
         studentName,
         rating: Number(review_rating),
-        description: review_description
+        description: review_description,
       });
 
       // 5. Update Course Rating Stats
       const currentRating = course.rating || 0;
       const currentCount = course.ratingCount || 0;
       const newCount = currentCount + 1;
-      const newAverage = ((currentRating * currentCount) + Number(review_rating)) / newCount;
+      const newAverage =
+        (currentRating * currentCount + Number(review_rating)) / newCount;
 
-      await courseModel.updateCourse(courseId, { rating: newAverage, ratingCount: newCount });
+      await courseModel.updateCourse(courseId, {
+        rating: newAverage,
+        ratingCount: newCount,
+      });
 
-      res.status(200).json({ success: true, message: "Review submitted successfully" });
+      res
+        .status(200)
+        .json({ success: true, message: "Review submitted successfully" });
     } catch (error) {
       next(error);
     }
@@ -127,9 +145,8 @@ class StudentController {
       const userProfile = await userModel.getUserById(uid);
 
       // Fetch gamification data
-      const gamificationData = await gamificationModel.getStudentGamification(
-        uid
-      );
+      const gamificationData =
+        await gamificationModel.getStudentGamification(uid);
 
       res.status(200).json({
         success: true,
@@ -146,13 +163,70 @@ class StudentController {
       next(error);
     }
   }
-
+  // updated method with calculated lock/unlock status
   async getAllCourses(req, res, next) {
     try {
+      const uid = req.user.uid;
+
+      // 1. Get raw courses
       const courses = await courseModel.getAllCourses();
+
+      // 2. Get Student's progress on ALL courses
+      const progressMap = await gradeModel.getAllStudentProgress(uid);
+
+      // 3. Identify completed courses (CourseID Set)
+      const completedCourseIds = new Set();
+      courses.forEach((c) => {
+        const viewed = progressMap[c.id] || [];
+        const total = c.content ? c.content.length : 0;
+        // Logic: Completed if viewed count >= total content count
+        // Note: Empty courses (0 content) are auto-completed
+        if (total === 0 || viewed.length >= total) {
+          completedCourseIds.add(c.id);
+        }
+      });
+
+      // 4. Determine Lock Status based on Subject Level & Category
+      // Logic:
+      // H2 requires >=1 completed H1 in same category.
+      // H3 requires >=1 completed H2 in same category.
+      const enrichedCourses = courses.map((course) => {
+        const level = course.subjectLevel || "H1";
+        const category = course.category;
+        let isLocked = false;
+
+        if (level === "H2") {
+          // Check if user has completed ANY H1 course in this category
+          const hasCompletedPrereq = courses.some(
+            (c) =>
+              c.category === category &&
+              (c.subjectLevel === "H1" || !c.subjectLevel) &&
+              completedCourseIds.has(c.id),
+          );
+          if (!hasCompletedPrereq) isLocked = true;
+        } else if (level === "H3") {
+          // Check if user has completed ANY H2 course in this category
+          const hasCompletedPrereq = courses.some(
+            (c) =>
+              c.category === category &&
+              c.subjectLevel === "H2" &&
+              completedCourseIds.has(c.id),
+          );
+          if (!hasCompletedPrereq) isLocked = true;
+        }
+
+        // Add calculated flags to the response object
+        return {
+          ...course,
+          subjectLevel: level,
+          isLocked: isLocked,
+          isCompleted: completedCourseIds.has(course.id),
+        };
+      });
+
       res.status(200).json({
         success: true,
-        data: courses,
+        data: enrichedCourses,
       });
     } catch (error) {
       next(error);
@@ -395,11 +469,10 @@ class StudentController {
     }
   }
 
-  async checkIfTestAttempted(req, res, next){
-    try{
+  async checkIfTestAttempted(req, res, next) {
+    try {
       const uid = req.user.uid;
       const assID = req.body.assID;
-      
 
       const outcome = await testAttemptModel.haspreviousattempt(uid, assID);
 
@@ -407,17 +480,16 @@ class StudentController {
         success: true,
         message: "Successfully submitted test attempt.",
         data: {
-          outcome: outcome
-        }
+          outcome: outcome,
+        },
       });
-    }catch (error) {
+    } catch (error) {
       next(error);
     }
   }
 
-  async getallgradesbyCID(req, res, next)
-  {
-    try{
+  async getallgradesbyCID(req, res, next) {
+    try {
       const { courseId } = req.params;
       const result = await gradeModel.getGradeByCourseId(courseId);
 
@@ -425,27 +497,26 @@ class StudentController {
         success: true,
         message: "Successfully retreived leaderboard.",
         data: {
-          outcome: result
-        }
+          outcome: result,
+        },
       });
-    }catch (error) {
+    } catch (error) {
       next(error);
     }
   }
 
-  async getallgradestagtoSID(req, res, next)
-  {
-    try{
+  async getallgradestagtoSID(req, res, next) {
+    try {
       const result = await gradeModel.getAllGradesTagToSID();
 
       res.status(200).json({
         success: true,
         message: "Successfully retreived leaderboard.",
         data: {
-          outcome: result
-        }
+          outcome: result,
+        },
       });
-    }catch (error) {
+    } catch (error) {
       next(error);
     }
   }

@@ -5,6 +5,8 @@ import { authFetch } from "../../services/api";
 import "../../CSS/CourseEditorPage.css";
 import "../../CSS/CoursePage.css";
 
+const courseColors = ["#FF6B6B", "#4ECDC4", "#FFE66D", "#A8E6CF", "#FFB347"];
+
 function CoursePage() {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -28,6 +30,10 @@ function CoursePage() {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [selectedCourseGrades, setSCG] = useState([]);
   const [RawselectedCourseGrades, setRSCG] = useState([]);
+  
+  const [searchVal, setSV] = useState("");
+  const [foundCourse, setFC] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // 1. Fetch Courses
   const fetchCourses = async () => {
@@ -35,7 +41,7 @@ function CoursePage() {
       const res = await authFetch(
         "http://localhost:5000/api/students/courses",
         {},
-        user
+        user,
       );
       if (res.success) setCourses(res.data);
     } catch (error) {
@@ -72,7 +78,7 @@ function CoursePage() {
             const res = await authFetch(
               `http://localhost:5000/api/students/course-progress/${selectedCourse.id}`,
               {},
-              user
+              user,
             );
             if (res.success) setProgress(res.data);
           }
@@ -87,6 +93,7 @@ function CoursePage() {
   // --- Handlers ---
 
   const openCourseDetails = (course) => {
+    if (course.isLocked) return;
     const enrolled = course.enrolledStudents?.includes(user?.uid);
     setSelectedCourse(course);
     getcoursestudentgrade(course.id);
@@ -99,46 +106,56 @@ function CoursePage() {
 
   const getcoursestudentgrade = async (courseID) => {
     let res = null;
-    const x = await authFetch("http://localhost:5000/api/messages/getMsgRecivers", {method: "GET"}, user);
-    try{
-      res = await authFetch(`http://localhost:5000/api/students/getgradesbycid/${courseID}`, {method: "GET"}, user);
+    const x = await authFetch(
+      "http://localhost:5000/api/messages/getMsgRecivers",
+      { method: "GET" },
+      user,
+    );
+    try {
+      res = await authFetch(
+        `http://localhost:5000/api/students/getgradesbycid/${courseID}`,
+        { method: "GET" },
+        user,
+      );
       setRSCG(res.data);
-    }catch (error) {
+    } catch (error) {
       alert("Failed to get grades.");
-    }
-    finally{
+    } finally {
       formatLeaderboard(res.data, x.data.users);
     }
-  }
+  };
 
-  function formatLeaderboard(thing, ppl){
+  function formatLeaderboard(thing, ppl) {
+    // FIX: Safely handle missing/undefined data
+    if (!thing || !thing.outcome || !Array.isArray(thing.outcome)) {
+      setSCG([]);
+      return;
+    }
     let x = thing;
     let formattedgrade = [];
-    for(let i = 0; i < x.outcome.length; i++){
+    for (let i = 0; i < x.outcome.length; i++) {
       let z = x.outcome[i].results;
       let num = 0;
-      for(let j = 0; j < z.length; j++)
-      {
-        if(z[j].weightedGrade !== undefined)
-        {
-          num += z[j].weightedGrade;
-        }
-      }
-      if(num !== 0)
-      {
-        let name = "";
-        for (let i = 0; i < ppl.length; i++)
-        {
-          if(ppl[i].uid === x.outcome[i].studentId)
-          {
-            name = ppl[i].displayName;
-            break;
+      if (z !== undefined) {
+        for (let j = 0; j < z.length; j++) {
+          if (z[j].weightedGrade !== undefined) {
+            num += z[j].weightedGrade;
           }
         }
-        formattedgrade.push({s_name: name, LboardScore: num})
+        if (num !== 0) {
+          let name = "";
+          for (let z = 0; z < ppl.length; z++) {
+            if (ppl[z].uid === x.outcome[i].studentId) {
+              name = ppl[z].displayName;
+              break;
+            }
+          }
+          formattedgrade.push({ s_name: name, LboardScore: num });
+        }
       }
     }
-    setSCG(formattedgrade);
+    let y = formattedgrade.sort((a, b) => b.LboardScore - a.LboardScore);
+    setSCG(y);
   }
 
   const handleEnroll = async () => {
@@ -151,7 +168,7 @@ function CoursePage() {
           method: "POST",
           body: JSON.stringify({ courseId: selectedCourse.id }),
         },
-        user
+        user,
       );
 
       if (res.success) {
@@ -185,7 +202,7 @@ function CoursePage() {
             method: "POST",
             body: JSON.stringify({ courseId: selectedCourse.id, contentId }),
           },
-          user
+          user,
         );
       } catch (e) {
         console.error(e);
@@ -215,7 +232,7 @@ function CoursePage() {
             review_description: reviewForm.description,
           }),
         },
-        user
+        user,
       );
       alert("Review Submitted!");
       fetchCourses(); // Refresh to see updated reviews
@@ -227,12 +244,33 @@ function CoursePage() {
     }
   };
 
+  const updateSearchValue= (event) => {
+    setSV(event.target.value)
+  }
+
   // --- Sort Courses (Enrolled First) ---
   const sortedCourses = [...courses].sort((a, b) => {
     const isEnrolledA = a.enrolledStudents?.includes(user?.uid) ? 1 : 0;
     const isEnrolledB = b.enrolledStudents?.includes(user?.uid) ? 1 : 0;
     return isEnrolledB - isEnrolledA;
   });
+
+  function executeSearch(){
+    setFC([]);
+    setIsSearching(true);
+    courses.forEach(element => {
+      if(element.title=== searchVal){
+        let temp = foundCourse;
+        temp.push(element);
+        setFC(temp);
+      }
+    });
+  }
+
+  function ResetSearch(){
+    setIsSearching(false);
+    setFC([]);
+  }
 
   if (loading) return <div>Loading courses...</div>;
   if (!user) return <div>Please log in.</div>;
@@ -242,49 +280,195 @@ function CoursePage() {
       <h1>Available Courses</h1>
       <p>Explore and enroll in courses to boost your skills.</p>
 
-      <div className="courses-grid">
-        {sortedCourses.map((course) => {
-          const isEnrolled = course.enrolledStudents?.includes(user.uid);
-          return (
-            <div
-              key={course.id}
-              className="course-card"
-              onClick={() => openCourseDetails(course)}
-              style={{
-                border: isEnrolled ? "2px solid #4cd137" : "1px solid #ddd",
-              }}
-            >
-              <div
-                className="course-card-image"
-                style={{
-                  backgroundImage: `url('https://placehold.co/600x400?text=${course.title.charAt(
-                    0
-                  )}')`,
-                }}
-              ></div>
-              <div className="course-card-content">
-                {isEnrolled && (
-                  <span
+      <div>
+        <input placeholder= {"Search by Name"} onChange={updateSearchValue}/>
+        <button onClick={executeSearch}>Search</button>
+        {
+          isSearching === true && (
+            <button onClick={ResetSearch}>Clear Search</button>
+          )
+        }
+      </div>
+
+      <div>
+        {isSearching === false ? (
+            <div className="courses-grid">
+            {sortedCourses.map((course, index) => {
+              const isEnrolled = course.enrolledStudents?.includes(user.uid);
+              const isLocked = course.isLocked; //flag from server
+              return (
+                <div
+                  key={course.id}
+                  className={`course-card ${isLocked ? "locked-course" : ""}`} // Add CSS class for greyscale/opacity
+                  onClick={() => openCourseDetails(course)}
+                  style={{
+                    border: isEnrolled ? "2px solid #4cd137" : "1px solid #ddd",
+                    opacity: isLocked ? 0.6 : 1,
+                    cursor: isLocked ? "not-allowed" : "pointer",
+                    filter: isLocked ? "grayscale(100%)" : "none",
+                  }}
+                >
+                  <div
+                    className="course-card-image"
                     style={{
-                      backgroundColor: "#4cd137",
+                      background: isLocked
+                        ? "#95a5a6"
+                        : courseColors[index % courseColors.length],
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "72px",
+                      fontWeight: "800",
                       color: "white",
-                      padding: "2px 8px",
-                      borderRadius: "4px",
-                      fontSize: "12px",
-                      fontWeight: "bold",
+                      position: "relative",
                     }}
                   >
-                    ENROLLED
-                  </span>
-                )}
-                <h3>{course.title}</h3>
-                <p style={{ fontSize: "14px", color: "#666" }}>
-                  Instructor: {course.instructorName}
-                </p>
-              </div>
+                    {isLocked ? "🔒" : course.title.charAt(0).toUpperCase()}
+    
+                    {/* LEVEL BADGE */}
+                    <span
+                      style={{
+                        position: "absolute",
+                        bottom: "10px",
+                        right: "10px",
+                        fontSize: "14px",
+                        background: "rgba(0,0,0,0.5)",
+                        padding: "2px 8px",
+                        borderRadius: "4px",
+                      }}
+                    >
+                      {course.subjectLevel || "H1"}
+                    </span>
+                  </div>
+                  <div className="course-card-content">
+                    {isEnrolled && (
+                      <span
+                        style={{
+                          backgroundColor: "#4cd137",
+                          color: "white",
+                          padding: "2px 8px",
+                          borderRadius: "4px",
+                          fontSize: "12px",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        ENROLLED
+                      </span>
+                    )}
+                    {isLocked && (
+                      <span
+                        style={{
+                          backgroundColor: "#e74c3c",
+                          color: "white",
+                          padding: "2px 8px",
+                          borderRadius: "4px",
+                          fontSize: "12px",
+                          fontWeight: "bold",
+                          marginLeft: isEnrolled ? "5px" : "0",
+                        }}
+                      >
+                        LOCKED
+                      </span>
+                    )}
+                    <h3>{course.title}</h3>
+                    <p style={{ fontSize: "14px", color: "#666" }}>
+                      Instructor: {course.instructorName}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
             </div>
-          );
-        })}
+          ) : (
+            <div className="courses-grid">
+              {foundCourse.map((course, index) => {
+              const isEnrolled = course.enrolledStudents?.includes(user.uid);
+              const isLocked = course.isLocked; //flag from server
+              return (
+                <div
+                  key={course.id}
+                  className={`course-card ${isLocked ? "locked-course" : ""}`} // Add CSS class for greyscale/opacity
+                  onClick={() => openCourseDetails(course)}
+                  style={{
+                    border: isEnrolled ? "2px solid #4cd137" : "1px solid #ddd",
+                    opacity: isLocked ? 0.6 : 1,
+                    cursor: isLocked ? "not-allowed" : "pointer",
+                    filter: isLocked ? "grayscale(100%)" : "none",
+                  }}
+                >
+                  <div
+                    className="course-card-image"
+                    style={{
+                      background: isLocked
+                        ? "#95a5a6"
+                        : courseColors[index % courseColors.length],
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "72px",
+                      fontWeight: "800",
+                      color: "white",
+                      position: "relative",
+                    }}
+                  >
+                    {isLocked ? "🔒" : course.title.charAt(0).toUpperCase()}
+    
+                    {/* LEVEL BADGE */}
+                    <span
+                      style={{
+                        position: "absolute",
+                        bottom: "10px",
+                        right: "10px",
+                        fontSize: "14px",
+                        background: "rgba(0,0,0,0.5)",
+                        padding: "2px 8px",
+                        borderRadius: "4px",
+                      }}
+                    >
+                      {course.subjectLevel || "H1"}
+                    </span>
+                  </div>
+                  <div className="course-card-content">
+                    {isEnrolled && (
+                      <span
+                        style={{
+                          backgroundColor: "#4cd137",
+                          color: "white",
+                          padding: "2px 8px",
+                          borderRadius: "4px",
+                          fontSize: "12px",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        ENROLLED
+                      </span>
+                    )}
+                    {isLocked && (
+                      <span
+                        style={{
+                          backgroundColor: "#e74c3c",
+                          color: "white",
+                          padding: "2px 8px",
+                          borderRadius: "4px",
+                          fontSize: "12px",
+                          fontWeight: "bold",
+                          marginLeft: isEnrolled ? "5px" : "0",
+                        }}
+                      >
+                        LOCKED
+                      </span>
+                    )}
+                    <h3>{course.title}</h3>
+                    <p style={{ fontSize: "14px", color: "#666" }}>
+                      Instructor: {course.instructorName}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+            </div>
+          )
+        }
       </div>
 
       {isModalOpen && selectedCourse && (
@@ -350,18 +534,23 @@ function CoursePage() {
               {activeTab === "reviews" && (
                 <>
                   <h3 className="reviews-section-title">Reviews</h3>
-                  
+
                   {/* Reviews List */}
                   <div className="reviews-scroll">
-                    {selectedCourse.reviews && selectedCourse.reviews.length > 0 ? (
+                    {selectedCourse.reviews &&
+                    selectedCourse.reviews.length > 0 ? (
                       selectedCourse.reviews.map((rev, idx) => (
                         <div key={idx} className="review-card">
                           <div className="review-header">
                             <div className="review-author">
                               <div className="review-avatar">
-                                {rev.studentName ? rev.studentName.charAt(0).toUpperCase() : "?"}
+                                {rev.studentName
+                                  ? rev.studentName.charAt(0).toUpperCase()
+                                  : "?"}
                               </div>
-                              <span className="review-author-name">{rev.studentName}</span>
+                              <span className="review-author-name">
+                                {rev.studentName}
+                              </span>
                             </div>
                             <div className="review-rating">
                               <span>⭐</span>
@@ -383,7 +572,7 @@ function CoursePage() {
                       {progress.isCompleted ? (
                         <div className="review-form-container">
                           <h4 className="review-form-title">Write a Review</h4>
-                          
+
                           <div className="review-form-group">
                             <label className="review-form-label">Rating</label>
                             <select
@@ -405,7 +594,9 @@ function CoursePage() {
                           </div>
 
                           <div className="review-form-group">
-                            <label className="review-form-label">Your Review</label>
+                            <label className="review-form-label">
+                              Your Review
+                            </label>
                             <textarea
                               className="review-textarea"
                               placeholder="Share your experience with this course..."
@@ -424,7 +615,9 @@ function CoursePage() {
                             onClick={handleReviewSubmit}
                             disabled={reviewSubmitting}
                           >
-                            {reviewSubmitting ? "Submitting..." : "Submit Review"}
+                            {reviewSubmitting
+                              ? "Submitting..."
+                              : "Submit Review"}
                           </button>
                         </div>
                       ) : (
@@ -434,7 +627,9 @@ function CoursePage() {
                             Complete all materials to unlock reviews
                           </p>
                           <p className="review-locked-progress">
-                            Progress: {progress.viewedItems.length} / {selectedCourse.content?.length || 0} items completed
+                            Progress: {progress.viewedItems.length} /{" "}
+                            {selectedCourse.content?.length || 0} items
+                            completed
                           </p>
                         </div>
                       )}
@@ -453,7 +648,7 @@ function CoursePage() {
                       <div className="file-list student-file-list">
                         {selectedCourse.content.map((file) => {
                           const isViewed = progress.viewedItems.includes(
-                            file.id
+                            file.id,
                           );
                           return (
                             <div
@@ -482,7 +677,7 @@ function CoursePage() {
                                     handleContentClick(
                                       file.id,
                                       "file",
-                                      file.fileUrl
+                                      file.fileUrl,
                                     )
                                   }
                                   style={{
@@ -528,23 +723,27 @@ function CoursePage() {
                               Start
                             </button>
                             {/* 2. NEW: AI Analysis Button */}
-                          <button 
-                            onClick={() => navigate(`/analytics/${selectedCourse.id}/${file.id}`)}
-                            style={{ 
-                              backgroundColor: '#6c5ce7', 
-                              color: 'white',
-                              border: 'none',
-                              padding: '5px 10px',
-                              borderRadius: '4px',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            📊 Analyze Progress
-                          </button>
+                            <button
+                              onClick={() =>
+                                navigate(
+                                  `/analytics/${selectedCourse.id}/${file.id}`,
+                                )
+                              }
+                              style={{
+                                backgroundColor: "#6c5ce7",
+                                color: "white",
+                                border: "none",
+                                padding: "5px 10px",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                              }}
+                            >
+                              📊 Analyze Progress
+                            </button>
                           </div>
                         ))}
                       {!selectedCourse.content?.some(
-                        (f) => f.type === "quiz" || f.type === "test"
+                        (f) => f.type === "quiz" || f.type === "test",
                       ) && <p>No assessments in this course.</p>}
                     </div>
                   ) : (
@@ -553,19 +752,69 @@ function CoursePage() {
                 </>
               )}
 
-              {/* === LEADERBOARD TAB === */}
-              {activeTab === "leaderboard" && (
-                <>
-                  <h3>Leaderboard</h3>
-                  {
-                    selectedCourseGrades.map(
-                      (leaderboard) => (
-                        <span>{leaderboard.s_name} Score: {leaderboard.LboardScore}</span>
-                      )
-                    )
-                  }
-                </>
-              )}
+                {/* === LEADERBOARD TAB === */}
+                {activeTab === "leaderboard" && (
+                  <div className="leaderboard-container">
+                    <h3>Leaderboard</h3>
+                    
+                    {selectedCourseGrades.length === 0 ? (
+                      <div className="leaderboard-empty">
+                        <p style={{ fontSize: "48px", margin: "0 0 10px 0" }}>🏆</p>
+                        <p style={{ fontSize: "16px", fontWeight: "600", color: "#666" }}>
+                          No scores yet
+                        </p>
+                        <p style={{ fontSize: "14px", color: "#999" }}>
+                          Complete assessments to appear on the leaderboard!
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="leaderboard-list">
+                        {selectedCourseGrades.map((leaderboard, index) => {
+                          const rank = index + 1;
+                          const isCurrentUser = leaderboard.s_name === user?.displayName;
+                          
+                          // Determine rank class
+                          let rankClass = "rank-other";
+                          if (rank === 1) rankClass = "rank-1";
+                          else if (rank === 2) rankClass = "rank-2";
+                          else if (rank === 3) rankClass = "rank-3";
+                          
+                          // Medal for top 3
+                          let medal = "";
+                          if (rank === 1) medal = "🥇";
+                          else if (rank === 2) medal = "🥈";
+                          else if (rank === 3) medal = "🥉";
+                          
+                          return (
+                            <div 
+                              key={index} 
+                              className={`leaderboard-item ${isCurrentUser ? "current-user" : ""}`}
+                            >
+                              <div className={`leaderboard-rank ${rankClass}`}>
+                                {rank}
+                              </div>
+                              
+                              <div className="leaderboard-student-info">
+                                <p className="leaderboard-student-name">
+                                  {medal && <span className="rank-medal">{medal}</span>}
+                                  {leaderboard.s_name}
+                                  {isCurrentUser && " (You)"}
+                                </p>
+                              </div>
+                              
+                              <div className="leaderboard-score">
+                                <span className="leaderboard-score-value">
+                                  {leaderboard.LboardScore.toFixed(1)}
+                                </span>
+                                <span className="leaderboard-score-label">Points</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
             </div>
 
             {/* FOOTER */}

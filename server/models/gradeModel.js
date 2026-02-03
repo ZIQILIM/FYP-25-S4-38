@@ -25,45 +25,46 @@ class GradeModel {
     }
   }
 
-  async getGradeByCourseId(courseId){
-    try{
-      const snapshot = await this.collection.where("courseId", "==", courseId).get();
+  async getGradeByCourseId(courseId) {
+    try {
+      const snapshot = await this.collection
+        .where("courseId", "==", courseId)
+        .get();
 
       if (snapshot.empty) {
-          console.log("No matching documents.");
-          return;
+        console.log("No matching documents.");
+        return [];
       }
 
-      snapshot.docs.forEach((doc) => {
-          //there should only be one
-          console.log(doc.id, "=>", doc.data());
-          //xx = doc.id;
-      });
-
-      return snapshot.docs.map((doc) => ({ id: doc.data().studentId, ...doc.data() }));
+      return snapshot.docs.map((doc) => ({
+        id: doc.data().studentId,
+        ...doc.data(),
+      }));
     } catch (error) {
       throw new Error(error.message);
     }
   }
 
-  async getAllGradesTagToSID()
-  {
+  async getAllGradesTagToSID() {
     //get all grades and map to student id
-    try{
+    try {
       const snapshot = await this.collection.get();
 
       if (snapshot.empty) {
-          console.log("No matching documents.");
-          return;
+        console.log("No matching documents.");
+        return [];
       }
 
       snapshot.forEach((doc) => {
-          //there should only be one
-          console.log(doc.id, "=>", doc.data());
-          //xx = doc.id;
+        //there should only be one
+        console.log(doc.id, "=>", doc.data());
+        //xx = doc.id;
       });
 
-      return snapshot.docs.map((doc) => ({ id: doc.data().studentId, ...doc.data() }));
+      return snapshot.docs.map((doc) => ({
+        id: doc.data().studentId,
+        ...doc.data(),
+      }));
     } catch (error) {
       throw new Error(error.message);
     }
@@ -158,7 +159,7 @@ class GradeModel {
             viewedItems,
             lastUpdated: new Date().toISOString(),
           },
-          { merge: true }
+          { merge: true },
         );
       }
 
@@ -168,7 +169,7 @@ class GradeModel {
     }
   }
 
-  // [NEW] Get Progress (Fetched from 'grades' collection)
+  // Get Progress (Fetched from 'grades' collection)
   async getProgress(studentId, courseId) {
     try {
       const docId = `progress_${studentId}_${courseId}`;
@@ -176,6 +177,56 @@ class GradeModel {
 
       if (!doc.exists) return [];
       return doc.data().viewedItems || [];
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  // NEW: Fetch all progress records for a single student
+  async getAllStudentProgress(studentId) {
+    try {
+      // Because we used 'type: "progress"' in markItemViewed, we can query by it.
+      const snapshot = await this.collection
+        .where("studentId", "==", studentId)
+        .where("type", "==", "progress")
+        .get();
+
+      const progressMap = {};
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        // Map courseId to viewedItems array
+        progressMap[data.courseId] = data.viewedItems || [];
+      });
+      return progressMap;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async getSingleStudentGrade(studentId, courseId) {
+    try {
+      const docId = `progress_${studentId}_${courseId}`;
+      const doc = await this.collection.doc(docId).get();
+
+      if (!doc.exists) {
+        //error
+      }
+      return doc.data();
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async UpdateSingleStudentGrade(studentId, courseId, newTG) {
+    try {
+      const docId = `progress_${studentId}_${courseId}`;
+      const doc = await this.collection.doc(docId).get();
+
+      await this.collection.doc(docId).update({ total_Grade: newTG });
+
+      if (!doc.exists) {
+        //error
+      }
     } catch (error) {
       throw new Error(error.message);
     }
