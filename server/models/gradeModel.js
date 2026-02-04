@@ -70,6 +70,20 @@ class GradeModel {
     }
   }
 
+  async getEverything(){
+    try{
+      const snapshot = await this.collection.get();
+      const grades = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      return grades;
+    } catch(error){
+      throw new Error(error.message);
+    }
+  }
+
   async submitTestAttempt(studentId, courseId, assessmentId, datatobesent) {
     try {
       // RESULT DATA STRUCTURE

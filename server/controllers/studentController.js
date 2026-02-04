@@ -271,7 +271,7 @@ class StudentController {
       }
 
       await courseModel.enrollStudent(courseId, uid);
-      await gradeModel.createCourseGrade(uid, courseId);
+      //await gradeModel.createCourseGrade(uid, courseId);
       res.status(200).json({
         success: true,
         message: "Enrolled successfully",
