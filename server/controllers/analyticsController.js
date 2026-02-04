@@ -47,6 +47,55 @@ class AnalyticsController {
             res.status(500).json({ success: false, message: "Internal Server Error" });
         }
     }
+
+    async getOverallStudentStats(req, res, next) {
+        try{
+            const { studentId, courseId} = req.body;
+            const docId = `progress_${studentId}_${courseId}`;
+            const doc = await db.collection("grades").doc(docId).get();
+            
+            if (!doc.exists) {
+                return res.status(200).json({ 
+                    success: false, 
+                    message: "No course stats available yet.",
+                    data: {}
+                });
+            }
+
+            const resultsMap = doc.data().results || {};
+
+            const allResults = Object.values(resultsMap)
+                .map(item => parseFloat(item.score))
+                .filter(score => !isNaN(score));
+
+            if (allResults.length === 0) {
+                return res.status(200).json({ 
+                    success: false, 
+                    message: "No scores available to calculate stats",
+                    data: {}
+                });
+            }
+
+            const pythonResponse = await fetch("http://127.0.0.1:8000/overall-student-stats", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ scores: allResults, student_id: studentId }),
+            });
+
+            const stats = await pythonResponse.json();
+
+            // await db.collection("studentstats").doc(`stats_${courseId}`).set({
+            //     ...stats,
+            //     studentId: studentId,
+            //     updated_at: new Date()
+            // });
+
+            res.status(200).json({ success: true, data: stats.results });
+        } catch (error) {   
+            console.error("Overall Student Stats Controller Error:", error);
+            res.status(500).json({ success: false, message: "Internal Server Error" });
+        }
+    }
 }
 
 module.exports = new AnalyticsController();
