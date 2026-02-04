@@ -8,7 +8,9 @@ function InternshipPostingPage() {
   const [postings, setPostings] = useState([]);
   const [candidates, setCandidates] = useState([]); // Store matched students
   const [viewingPostingId, setViewingPostingId] = useState(null);
-
+  const [allStudents, setAllStudents] = useState([]);
+  const [allGrades, setAllGrades] = useState([]);
+  const [eligiblePPL, setEPPL] = useState([]);
   // Form State
   const [showCreate, setShowCreate] = useState(false);
   const [showAddMoreReqs, setAMR] = useState(false);
@@ -39,6 +41,17 @@ function InternshipPostingPage() {
     }
   };
 
+  const getSingleStudentGrade =async (sid, cid) => {
+    try{
+      const res = await authFetch("http://localhost:5000/api/internships/getSingleStudentGrade", {}, user);
+      if(res.success){
+        return res.data;
+      }
+    }catch (error) {
+      console.error(error);
+    }
+  }
+
   const getCourseList = async () => {
     try{
       const res = await authFetch(
@@ -63,6 +76,8 @@ function InternshipPostingPage() {
   useEffect(() => {
     fetchPostings();
     getCourseList();
+    getStudents();
+    getGrades();
   }, [user]);
 
   // 2. Create Job
@@ -83,6 +98,79 @@ function InternshipPostingPage() {
       alert("Error creating job");
     }
   };
+
+  const getGrades = async () => {
+    try{
+      const res = await authFetch("http://localhost:5000/api/internships/getallgrades", {}, user);
+      if(res.success){
+        setAllGrades(res.data);
+      }
+    } catch(error){
+      console.error(error);
+    }
+  }
+
+  const getStudents = async () => {
+    try{
+      const res = await authFetch("http://localhost:5000/api/internships/getAllStudents", {}, user);
+      if(res.success){
+        setAllStudents(res.data);
+      }
+    }catch (error) {
+      console.error(error);
+    }
+  }
+
+  const viewEligibleCandidates = async (job) => {
+    setViewingPostingId(job.id);
+    let specifiedcourses = job.additionalrequirements;
+    let averageScoreReq = job.minScore;
+    let metavgcrit = false;
+    let list = [];
+    allStudents.users.forEach(element => {
+      let metspeccrit = [];
+      let eligible = true;
+      //get student grade course
+      if(specifiedcourses !== undefined)
+        {
+          specifiedcourses.forEach(x => {
+            allGrades.grades.forEach(z=> {
+              if(z.studentId === element.uid && z.courseId === x.cid){
+                //matching grade
+                if(z.total_Grade > x.percentage)
+                {
+                  metspeccrit.push(true);
+                }
+                else{
+                  metspeccrit.push(false);
+                }
+              }
+            })
+          
+        });
+      }
+      else{
+        eligible = false;
+      }
+
+      if(metspeccrit.length > 0)
+      {
+        metspeccrit.forEach(val => {
+          if(val === false){
+            eligible = false;
+          }
+        })
+      }
+      else{
+        eligible= false;
+      }
+
+      if(eligible === true)
+        list.push(element);
+    });
+    setEPPL(list);
+    setCandidates(list);
+  }
 
   // 3. View Qualified Candidates (The Headhunting Logic)
   const viewCandidates = async (postingId) => {
@@ -178,7 +266,7 @@ function InternshipPostingPage() {
                 <button
                   className="admin-btn btn-green"
                   style={{ width: "100%", marginTop: "10px" }}
-                  onClick={() => viewCandidates(job.id)}
+                  onClick={() => viewEligibleCandidates(job)}
                 >
                   View Qualified Students
                 </button>
@@ -296,7 +384,7 @@ function InternshipPostingPage() {
                   {candidates.length > 0 ? (
                     candidates.map((student, idx) => (
                       <tr key={idx}>
-                        <td>{student.name}</td>
+                        <td>{student.displayName}</td>
                         <td>{student.email}</td>
                         <td style={{ fontWeight: "bold", color: "#4cd137" }}>
                           {student.averageScore}%

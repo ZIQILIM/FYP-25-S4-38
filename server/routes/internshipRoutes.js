@@ -12,5 +12,8 @@ router.post("/create", internshipController.createPosting);
 router.get("/my-postings", internshipController.getMyPostings);
 router.get("/:postingId/candidates", internshipController.getCandidates);
 router.get("/getAllCourses", internshipController.getFullCourseList);
+router.get("/getAllStudents", internshipController.getAllStudents);
+router.post("/getSingleStudentGrade", internshipController.getSingleStudentGrade);
+router.get("/getallgrades", internshipController.getAllGrades);
 
 module.exports = router;

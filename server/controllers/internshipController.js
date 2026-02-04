@@ -16,6 +16,7 @@ class InternshipController {
         description,
         minScore: parseInt(minScore) || 0,
         additionalrequirements,
+        eligiblecandidates: [],
       });
 
       res.status(201).json({ success: true, data: posting });
@@ -30,6 +31,50 @@ class InternshipController {
       const providerId = req.user.uid;
       const postings = await internshipModel.getPostingsByProvider(providerId);
       res.status(200).json({ success: true, data: postings });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getAllStudents(req, res, next) {
+    //get all students sort in front end
+    try{
+      let users = await userModel.getUsersByRole("student");
+      
+      res.status(200).json({
+          success: true,
+          data: { users },
+          
+        });
+    }  catch (error) {
+      next(error);
+    }
+  }
+
+  async getAllGrades(req, res, next){
+    try{
+      let grades = await gradeModel.getEverything();
+      res.status(200).json({
+        success: true,
+        data: {grades},
+      });
+    }
+    catch (error){
+
+    }
+  }
+
+  async getSingleStudentGrade(req, res, next){
+    try {
+      const studentId = req.body.sid;
+      const courseId = req.body.cid;
+  
+      const data = await gradeModel.getSingleStudentGrade(studentId, courseId);
+  
+      res.status(200).json({
+        success: true,
+        data: data,
+      });
     } catch (error) {
       next(error);
     }
