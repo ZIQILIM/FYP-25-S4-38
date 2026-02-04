@@ -1,5 +1,6 @@
-# import firebase_admin 
-# from firebase_admin import credentials, firestore
+import firebase_admin 
+from firebase_admin import credentials, firestore
+import numpy as np
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
@@ -7,11 +8,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# # Initialize Firebase Admin SDK
-# cred = credentials.Certificate("serviceAccountKey.json")
-# firebase_admin.initialize_app(cred)
+# Initialize Firebase Admin SDK
+cred = credentials.Certificate("serviceAccountKey.json")
+firebase_admin.initialize_app(cred)
 
-# db = firestore.client()
+db = firestore.client()
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,7 +25,11 @@ app.add_middleware(
 class RiskRequest(BaseModel):
     scores: List[float]
     attendance: Optional[float] = 100.0
-    type: Optional[str] = "quiz" # Changed from assessment_type to type
+    type: Optional[str] = "quiz"
+
+class StatsRequest(BaseModel):
+    scores: List[float]
+    student_id: Optional[str] = "unknown"
 
 @app.post("/predict-risk")
 async def predict_risk(data: RiskRequest):
@@ -85,3 +90,32 @@ async def predict_risk(data: RiskRequest):
         "recommendation": advice,
         "history": data.scores
     }
+
+@app.post("/overall-student-stats")
+def get_overall_stats(data: StatsRequest):
+    if not data.scores:
+        return {
+            "success": False,
+            "message": "No scores available to calculate stats",
+            "results": {}
+        }
+    
+    p25, p75 = np.percentile(data.scores, [25, 75])
+    avg_score = sum(data.scores) / len(data.scores)
+
+    stats_results = {
+        "lowest_score": min(data.scores),
+        "highest_score": max(data.scores),
+        "avg_score": round(avg_score, 2),
+        "p25_score": round(p25, 2),
+        "p75_score": round(p75, 2)
+    }
+
+    return_results = {
+        "success": True,
+        "message": "Statistics calculated successfully",
+        "results": stats_results
+    }
+
+    return return_results
+

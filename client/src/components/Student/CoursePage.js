@@ -35,9 +35,12 @@ function CoursePage() {
   const [searchVal, setSV] = useState("");
   const [foundCourse, setFC] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+
+  // Datamining States
   const [analysisModalOpen, setAnalysisModalOpen] = useState(false);
   const [analysisTarget, setAnalysisTarget] = useState({ assessmentId: null, title: "", type: "" });
 
+  const [overallStudentStats, setOverallStudentStats] = useState(null);
 
   // 1. Fetch Courses
   const fetchCourses = async () => {
@@ -54,12 +57,6 @@ function CoursePage() {
       setLoading(false);
     }
   };
-
-  const openAnalysis = (assessmentId, title, type) => {
-      setAnalysisTarget({ assessmentId, title, type });
-      setAnalysisModalOpen(true);
-  };
-
 
   useEffect(() => {
     if (user) fetchCourses();
@@ -100,6 +97,30 @@ function CoursePage() {
     }
   }, [selectedCourse, isModalOpen, user]);
 
+  // Datamining Handlers
+  const openAnalysis = (assessmentId, title, type) => {
+      setAnalysisTarget({ assessmentId, title, type });
+      setAnalysisModalOpen(true);
+  };
+
+  const fetchOverallStudentStats = async (courseId) => {
+    try{
+      const res = await authFetch("http://localhost:5000/api/analytics/overall-student-stats",
+        {
+          method: "POST",
+          body: JSON.stringify({ studentId: user.uid, courseId }),
+        },
+        user,
+      );
+      console.log("Full API Response:", res);
+      if(res.success){
+        setOverallStudentStats(res.data);
+      }
+    } catch (error) {
+      console.error("Error fetching overall student stats:", error);
+    }
+  };
+
   // --- Handlers ---
 
   const openCourseDetails = (course) => {
@@ -107,6 +128,10 @@ function CoursePage() {
     const enrolled = course.enrolledStudents?.includes(user?.uid);
     setSelectedCourse(course);
     getcoursestudentgrade(course.id);
+    
+    if(enrolled){
+      fetchOverallStudentStats(course.id);
+    }
     // If enrolled, go to materials. If not, reviews.
     setActiveTab(enrolled ? "materials" : "reviews");
     setIsModalOpen(true);
@@ -759,6 +784,39 @@ function CoursePage() {
                 //   )}
                 // </>
                 <>
+                   {overallStudentStats && (
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-around',
+                        backgroundColor: '#f8f9fa',
+                        padding: '15px',
+                        borderRadius: '10px',
+                        marginBottom: '20px',
+                        border: '1px solid #e9ecef'
+                      }}>
+                        <div style={{ textAlign: 'center' }}>
+                          <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>COURSE AVG</p>
+                          {/* Accessing keys from the 'data' returned by Node */}
+                          <p style={{ margin: 0, fontWeight: 'bold', color: '#6c5ce7' }}>
+                            {overallStudentStats.avg_score}%
+                          </p>
+                        </div>
+                        
+                        <div style={{ textAlign: 'center', borderLeft: '1px solid #ddd', borderRight: '1px solid #ddd', padding: '0 20px' }}>
+                          <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>CONSISTENCY (P25-P75)</p>
+                          <p style={{ margin: 0, fontWeight: 'bold' }}>
+                            {overallStudentStats.p25_score}% - {overallStudentStats.p75_score}%
+                          </p>
+                        </div>
+
+                        <div style={{ textAlign: 'center' }}>
+                          <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>PERSONAL BEST</p>
+                          <p style={{ margin: 0, fontWeight: 'bold', color: '#4cd137' }}>
+                            {overallStudentStats.highest_score}%
+                          </p>
+                        </div>
+                      </div>
+                    )}
                     {/* SECTION 1: QUIZZES */}
                     <h3>Daily Quizzes</h3>
                     <div className="file-list student-file-list">
