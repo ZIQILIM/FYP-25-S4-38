@@ -82,16 +82,12 @@ class StudentController {
           .json({ success: false, message: "Rating and description required" });
       }
 
-      // 3. Duplicate Check
-      const alreadyReviewed = await reviewModel.hasStudentReviewed(
+      // 3. Overwrite old review
+      await reviewModel.hasStudentReviewed(
         courseId,
         studentId,
       );
-      if (alreadyReviewed)
-        return res.status(400).json({
-          success: false,
-          message: "You have already reviewed this course.",
-        });
+      
 
       // 4. Save Review
       const studentProfile = await userModel.getUserById(studentId);
