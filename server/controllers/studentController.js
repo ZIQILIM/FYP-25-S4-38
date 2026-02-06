@@ -82,16 +82,12 @@ class StudentController {
           .json({ success: false, message: "Rating and description required" });
       }
 
-      // 3. Duplicate Check
-      const alreadyReviewed = await reviewModel.hasStudentReviewed(
+      // 3. Overwrite old review
+      await reviewModel.hasStudentReviewed(
         courseId,
         studentId,
       );
-      if (alreadyReviewed)
-        return res.status(400).json({
-          success: false,
-          message: "You have already reviewed this course.",
-        });
+      
 
       // 4. Save Review
       const studentProfile = await userModel.getUserById(studentId);
@@ -360,6 +356,7 @@ class StudentController {
       const uid = req.user.uid;
       // harcoding points on server side for security (daily login = +10)
       const result = await gamificationModel.claimDailyReward(uid, 10);
+      await gamificationModel.changeGamificationCurrency(uid, 10);
 
       if (!result.success) {
         return res.status(400).json(result);

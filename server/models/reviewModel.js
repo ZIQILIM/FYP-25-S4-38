@@ -12,6 +12,11 @@ class ReviewModel {
         .where("courseId", "==", courseId)
         .where("studentId", "==", studentId)
         .get();
+        
+
+        //snapshot.doc().delete();
+        //change to overwrite instead
+
       return !snapshot.empty; // Returns true if review exists
     } catch (error) {
       throw new Error(error.message);
@@ -46,7 +51,19 @@ class ReviewModel {
       .where("courseId", "==", courseId)
       .where("studentId", "==", studentId)
       .get();
-    return !snapshot.empty;
+
+      let x;
+
+      snapshot.forEach((doc) => {
+            //there should only be one
+            console.log(doc.id, "=>", doc.data());
+            x = doc.id;
+            //doc.delete();
+        });
+        if(x!==undefined)
+          await this.collection.doc(x).delete();
+
+    return true;
   }
 
   // 3. Get reviews for a course by courseId

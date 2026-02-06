@@ -116,6 +116,9 @@ function CoursePage() {
       if(res.success){
         setOverallStudentStats(res.data);
       }
+      else{
+        setOverallStudentStats(null);
+      }
     } catch (error) {
       console.error("Error fetching overall student stats:", error);
     }
@@ -245,7 +248,7 @@ function CoursePage() {
     }
 
     // 3. Actual Action (Open Link or Quiz)
-    if (type === "quiz") {
+    if (type === "quiz" || type === "test" || type === "weighted") {
       navigate(`/student/course/assessment/${contentId}`);
     } else {
       window.open(url, "_blank");
