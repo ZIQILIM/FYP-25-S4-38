@@ -61,4 +61,6 @@ router.post("/submitAssessmentAttempt", studentController.submitAttempt);
 router.post("/submitTestAttempt", studentController.submitTestAttempt);
 router.post("/hasdonegradedtest", studentController.checkIfTestAttempted);
 
+router.post('/disable-account' , studentController.studentSelfDisabledAcc);
+
 module.exports = router;
