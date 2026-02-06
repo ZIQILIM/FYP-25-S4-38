@@ -4,8 +4,6 @@ import "../CSS/HomePage.css";
 // import { onAuthStateChanged } from "firebase/auth";
 import { AuthContext } from "../auth/authContext";
 import { authFetch } from "../services/api";
-import { signOut } from "firebase/auth";
-import { auth } from "../firebase";
 import StudentDailyLoginStreak from "./Student/StudentDailyLoginStreak";
 
 import StudentDashboard from "./Student/StudentDashboard";
@@ -16,7 +14,7 @@ import InternshipProviderDashboard from "./InternshipProviderDashboard";
 import { Link, useNavigate } from "react-router-dom";
 
 function NavBar() {
-  const { user } = useContext(AuthContext);
+  const { user, logoutAndRedirect } = useContext(AuthContext);
   const [dropDownOpen, setDropdownOpen] = useState(false);
   const [navName, setNavName] = useState("");
   const [userRole, setUserRole] = useState("");
@@ -25,8 +23,7 @@ function NavBar() {
   const toggleDropdown = () => setDropdownOpen(!dropDownOpen);
 
   const handleLogOut = async () => {
-    await signOut(auth);
-    navigate("/LoginPage");
+    await logoutAndRedirect();
   };
 
   useEffect(() => {
