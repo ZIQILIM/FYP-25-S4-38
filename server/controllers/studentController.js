@@ -13,6 +13,8 @@ const testAttemptModel = require("../models/testAttemptModel.js");
 // NEW for reviews
 const reviewModel = require("../models/reviewModel.js");
 
+const admin = require("../config/firebase");
+
 class StudentController {
   // New method to get course progress (content viewed or not)
 
@@ -512,6 +514,22 @@ class StudentController {
         data: {
           outcome: result,
         },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async studentSelfDisabledAcc(req, res, next) {
+    try {
+      const uid = req.user.uid;
+      const disable = true;
+      await admin.auth().updateUser(uid, { disabled: disable });
+      await admin.auth().revokeRefreshTokens(uid);
+      await userModel.toggleUserDisabledStatus(uid, disable);
+      res.status(200).json({
+        success: true,
+        message: "Student account disabled successfully.",
       });
     } catch (error) {
       next(error);

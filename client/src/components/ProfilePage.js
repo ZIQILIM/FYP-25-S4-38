@@ -1,12 +1,13 @@
 import React, { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../auth/authContext";
 import { authFetch } from "../services/api";
+import { useNavigate } from "react-router-dom";
 import "../CSS/ProfilePage.css";
 
 import BADGE_LIBRARY from "../services/badgeConfig.js";
 
 function ProfilePage() {
-  const { user } = useContext(AuthContext);
+  const { user, logoutAndRedirect } = useContext(AuthContext);
   const [profileData, setProfileData] = useState(null);
   const [gamification, setGamification] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -33,6 +34,7 @@ function ProfilePage() {
       "Industry partner connecting students with career opportunities.",
   };
 
+  const navigate = useNavigate();
   // 1. Load Data
   const loadProfile = async () => {
     if (!user) return;
@@ -96,6 +98,28 @@ function ProfilePage() {
       alert("Profile Updated!");
     } catch (err) {
       alert("Failed to update profile");
+    }
+  };
+
+  const handleSelfDisable = async () => {
+    const message = "Warning: Disabling your account will log you out immediately. Proceed?";
+
+    if (window.confirm(message)) {
+      try {
+        const res = await authFetch(
+          "http://localhost:5000/api/students/disable-account",
+          {
+            method: "POST",
+          },
+          user
+        );
+        if (res.success) {
+          await logoutAndRedirect();
+        }
+      } catch (error) {
+        console.error("Error disabling account:", error);
+        alert("Failed to disable account. Please try again later.");
+      }
     }
   };
 
@@ -255,7 +279,12 @@ function ProfilePage() {
 
           <div className="action-buttons">
             <button onClick={handleEditClick}>Edit Profile</button>
-            {userRole === "student" && <button>My Courses</button>}
+            {userRole === "student" && 
+              <div className="action-buttons">
+                <button onClick={() => navigate("/CoursePage")}>My Courses</button>
+              <button id="disable-button" onClick={handleSelfDisable}>Disable Account</button>
+              </div>
+            }
           </div>
         </div>
 

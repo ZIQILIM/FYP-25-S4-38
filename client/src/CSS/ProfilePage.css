@@ -216,6 +216,10 @@
   transform: translateY(-2px);
 }
 
+#disable-button{
+  background-color: red;
+}
+
 .profile-modal-overlay {
   position: fixed;
   inset: 0;
