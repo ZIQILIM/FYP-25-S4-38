@@ -38,6 +38,8 @@ function StudentDailyLoginStreak({
 
   if (!isOpen) return null; // if modal is closed, dont show anything
 
+  if(isClaimed === true) return null;
+
   return (
     <div className="daily-login-background" onClick={close}>
       <div className="daily-login-modal" onClick={(e) => e.stopPropagation()}>
