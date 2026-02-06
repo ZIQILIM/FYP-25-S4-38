@@ -116,6 +116,9 @@ function CoursePage() {
       if(res.success){
         setOverallStudentStats(res.data);
       }
+      else{
+        setOverallStudentStats(null);
+      }
     } catch (error) {
       console.error("Error fetching overall student stats:", error);
     }
