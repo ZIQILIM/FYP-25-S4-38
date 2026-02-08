@@ -27,7 +27,7 @@ import AssessmentPage from "./components/Student/AssessmentPage";
 import CreateUserPage from "./components/Admin/CreateUserPage";
 import ViewAccountPage from "./components/Admin/ViewAccountPage";
 import TestGradingPage from "./components/Instructor/TestGradingPage";
-
+import TeamPage from "./components/TeamPage";
 
 function App() {
   return (
@@ -79,6 +79,8 @@ function App() {
                 path="/student/course/assessment/:assessmentId"
                 element={<AssessmentPage />}
               />
+
+              <Route path="/team" element={<TeamPage />} />
 
               <Route path="/admin/users" element={<AdminUserPage />} />
               <Route path="/admin/create-user" element={<CreateUserPage />} />
