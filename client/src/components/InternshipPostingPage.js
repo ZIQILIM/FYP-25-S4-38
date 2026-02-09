@@ -123,11 +123,12 @@ function InternshipPostingPage() {
 
   const viewEligibleCandidates = async (job) => {
     setViewingPostingId(job.id);
+    const avgstudent = await viewCandidates(job.id);
     let specifiedcourses = job.additionalrequirements;
     let averageScoreReq = job.minScore;
     let metavgcrit = false;
     let list = [];
-    allStudents.users.forEach(element => {
+    avgstudent.forEach(element => {
       let metspeccrit = [];
       let eligible = true;
       //get student grade course
@@ -174,14 +175,14 @@ function InternshipPostingPage() {
 
   // 3. View Qualified Candidates (The Headhunting Logic)
   const viewCandidates = async (postingId) => {
-    setViewingPostingId(postingId);
+    //setViewingPostingId(postingId);
     try {
       const res = await authFetch(
         `http://localhost:5000/api/internships/${postingId}/candidates`,
         {},
         user
       );
-      if (res.success) setCandidates(res.data);
+      if (res.success) return res.data;//setCandidates(res.data);
     } catch (e) {
       alert("Error fetching candidates");
     }
@@ -376,10 +377,7 @@ function InternshipPostingPage() {
                   <tr>
                     <th>Student Name</th>
                     <th>Email</th>
-                    {
-                      //<th>Avg Score</th>
-                    }
-                    
+                    <th>Avg Score</th>
                     <th>Status</th>
                   </tr>
                 </thead>
@@ -387,13 +385,11 @@ function InternshipPostingPage() {
                   {candidates.length > 0 ? (
                     candidates.map((student, idx) => (
                       <tr key={idx}>
-                        <td>{student.displayName}</td>
+                        <td>{student.name}</td>
                         <td>{student.email}</td>
-                        {
-                          //<td style={{ fontWeight: "bold", color: "#4cd137" }}>
-                          //  {student.averageScore}%
-                          //</td>
-                        }
+                        <td style={{ fontWeight: "bold", color: "#4cd137" }}>
+                          {student.averageScore}%
+                        </td>
                         <td>
                           <span className="badge badge-active">Qualified</span>
                         </td>

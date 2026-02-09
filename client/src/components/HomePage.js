@@ -70,7 +70,13 @@ function NavBar() {
         </li>
         <li>About</li>
         <li>Services</li>
-        <li>Contact</li>
+
+        <li>
+        <Link to="/team" style={{ textDecoration: "none", color: "inherit" }}>
+          Contact
+        </Link>
+        </li>
+        
       </ul>
       <div className="home-nav-right">
         {!user ? (

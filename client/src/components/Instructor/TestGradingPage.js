@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../auth/authContext";
 import { authFetch } from "../../services/api";
 
-import "../../CSS/CoursePage.css";
+import "../../CSS/TestGradingPage.css";
 import { auth } from "../../firebase";
 
 function TestGradingPage() {
@@ -27,6 +27,8 @@ function TestGradingPage() {
 
     const [datathatwillbesent, setDTWBS] = useState(null);
     const [courseData, setCD] = useState(null);
+
+    const [boolx, setBX] = useState(false);
 
     const [qnCW, setqnCW] = useState(false);
 
@@ -130,15 +132,25 @@ function TestGradingPage() {
     }
 
     function updatedata(){
-        let changeddata = datathatwillbesent;
+        let changeddata = {...datathatwillbesent};  
+        
+        changeddata.answers = [...changeddata.answers];
+        changeddata.answers[currQnInd] = {...changeddata.answers[currQnInd]};
+        
         changeddata.answers[currQnInd].isCorrect = qnCW;
         if(qnCW === true)
-            changeddata.score = changeddata.score + 10;
+            changeddata.score = (changeddata.score || 0) + 10;
         setDTWBS(changeddata);
     }
 
-    function submitdatatodb() {
+    function submitdatatodbpt1() {
         updatedata();
+        
+        setBX(true);
+    }
+
+    function submitdatatodbpt2() {
+        
         generateWeightedGrade();
         setPTSDB(true);
     }
@@ -337,6 +349,11 @@ function TestGradingPage() {
         }
     }
 
+    if(boolx === true){
+        submitdatatodbpt2();
+        setBX(false);
+    }
+
     if(preparetosendDB === true && sendingtoDB === false){
         sendStudentGrade();
     }
@@ -353,57 +370,139 @@ function TestGradingPage() {
         setfinishFormat(true);
     }
     
-    if (loading) return(<div>Loading...</div>)
+    if (loading) {
+        return (
+            <div className="grading-page">
+                <div className="loading-state">
+                    <div className="loading-spinner"></div>
+                    <p className="loading-text">Loading assessment...</p>
+                </div>
+            </div>
+        );
+    }
 
-    return(
-        <div>
-            <h3>Grading Page</h3>
-            
-            {
-                questionList[currQnInd].type === "mcq" && (
-                    <div>
-                        <p>{questionList[currQnInd].text}</p>
-                        <p>Student Answer: {questionList[currQnInd].options[testAttemptData.questions.answers[currQnInd].selected]}</p>
-                        <div>
-                            <label>Correct</label>
-                            <input type="radio" name="grading" onChange={() => handleRadioButtonChange("correct")}/>
+    const progressPercent = ((currQnInd + 1) / questionList.length) * 100;
+
+    return (
+    <div className="grading-page">
+        <div className="grading-container">
+            {/* Header */}
+            <div className="grading-header">
+                <h3>Grading Page</h3>
+                <div className="grading-progress">
+                    <span className="progress-text">
+                        Question {currQnInd + 1} of {questionList.length}
+                    </span>
+                    <div className="progress-bar-bg">
+                        <div 
+                            className="progress-bar-fill" 
+                            style={{ width: `${progressPercent}%` }}
+                        ></div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grading-content">
+                {questionList[currQnInd].type === "mcq" && (
+                    <div className="question-card">
+                        <span className="question-number">
+                            Question {currQnInd + 1}
+                        </span>
+                        <h4 className="question-text">
+                            {questionList[currQnInd].text}
+                        </h4>
+
+                        <div className="answer-section">
+                            <span className="answer-label">Student Answer</span>
+                            <p className="answer-text">
+                                {datathatwillbesent?.answers?.[currQnInd]?.selected !== undefined
+                                    ? questionList[currQnInd].options[datathatwillbesent.answers[currQnInd].selected]
+                                    : "No answer submitted"}
+                            </p>
                         </div>
-                        <div>
-                            <label>Wrong</label>
-                            <input type="radio" name="grading" onChange={() => handleRadioButtonChange("wrong")}/>
+
+                        <div className="grading-options">
+                            <label className="radio-option correct-option">
+                                <input 
+                                    type="radio" 
+                                    name="grading" 
+                                    onChange={() => handleRadioButtonChange("correct")}
+                                />
+                                <span className="radio-label">Correct</span>
+                            </label>
+
+                            <label className="radio-option wrong-option">
+                                <input 
+                                    type="radio" 
+                                    name="grading" 
+                                    onChange={() => handleRadioButtonChange("wrong")}
+                                />
+                                <span className="radio-label">Wrong</span>
+                            </label>
                         </div>
                     </div>
-                )
-            }
-            {
-                questionList[currQnInd].type === "short_answer" && (
-                    <div>
-                        <p>{questionList[currQnInd].text}</p>
-                        <p>Student Answer: {testAttemptData.questions.answers[currQnInd].selected}</p>
-                        <p>Model Answer: {questionList[currQnInd].modelAnswer}</p>
-                        <div>
-                            <label>Correct</label>
-                            <input type="radio" name="grading" onChange={() => handleRadioButtonChange("correct")}/>
+                )}
+
+                {questionList[currQnInd].type === "short_answer" && (
+                    <div className="question-card">
+                        <span className="question-number">
+                            Question {currQnInd + 1}
+                        </span>
+                        <h4 className="question-text">
+                            {questionList[currQnInd].text}
+                        </h4>
+
+                        <div className="answer-section">
+                            <span className="answer-label">Student Answer</span>
+                            <p className="answer-text">
+                                {datathatwillbesent?.answers?.[currQnInd]?.selected || "No answer submitted"}
+                            </p>
                         </div>
-                        <div>
-                            <label>Wrong</label>
-                            <input type="radio" name="grading" onChange={() => handleRadioButtonChange("wrong")}/>
+
+                        <div className="answer-section">
+                            <span className="answer-label">Model Answer</span>
+                            <p className="answer-text model-answer">
+                                {questionList[currQnInd].modelAnswer}
+                            </p>
+                        </div>
+
+                        <div className="grading-options">
+                            <label className="radio-option correct-option">
+                                <input 
+                                    type="radio" 
+                                    name="grading" 
+                                    onChange={() => handleRadioButtonChange("correct")}
+                                />
+                                <span className="radio-label">Correct</span>
+                            </label>
+
+                            <label className="radio-option wrong-option">
+                                <input 
+                                    type="radio" 
+                                    name="grading" 
+                                    onChange={() => handleRadioButtonChange("wrong")}
+                                />
+                                <span className="radio-label">Wrong</span>
+                            </label>
                         </div>
                     </div>
-                    
-                )
-            }
-            
-            {
-                (currQnInd+1) === questionList.length ? (
-                    <button onClick={submitdatatodb}>Save</button>
+                )}
+            </div>
+
+            <div className="grading-actions">
+                {(currQnInd + 1) === questionList.length ? (
+                    <button className="grading-btn btn-save" onClick={submitdatatodbpt1}>
+                        Save & Submit
+                    </button>
                 ) : (
-                    <button onClick={incrementQn}>Next</button>
-                )
-            }
-            
+                    <button className="grading-btn btn-next" onClick={incrementQn}>
+                        Next Question
+                    </button>
+                )}
+            </div>
         </div>
-    )
+    </div>
+);
 }
 
 export default TestGradingPage;

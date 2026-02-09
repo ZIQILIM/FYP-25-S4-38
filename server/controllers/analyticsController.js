@@ -246,10 +246,15 @@ class AnalyticsController {
                                 students: [] 
                             };
                         }
+
+                        let y = result.answers.length;
+                        if(y === 0)
+                            y = 1;
+                        let x = parseFloat((result.score/(y * 10))* 100);
                         
                         groupedData[aId].students.push({
                             name: displayName,
-                            score: parseFloat(result.score) || 0
+                            score: parseFloat(x) || 0
                         });
                     }
                 }

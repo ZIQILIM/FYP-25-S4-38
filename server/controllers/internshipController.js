@@ -104,12 +104,13 @@ class InternshipController {
 
         // Calculate Average Score
         if (grades.length > 0) {
-          const total = grades.reduce((sum, g) => sum + (g.score || 0), 0);
+          const total = grades.reduce((sum, g) => sum + (g.total_Grade || 0), 0);
           const average = total / grades.length;
 
           // CHECK CRITERIA
           if (average >= minRequired) {
             qualifiedStudents.push({
+              uid: student.uid,
               name: `${student.firstName} ${student.lastName}`,
               email: student.email,
               averageScore: average.toFixed(1),
