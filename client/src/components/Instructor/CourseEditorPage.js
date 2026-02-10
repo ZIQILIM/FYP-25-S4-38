@@ -558,8 +558,11 @@ function CourseEditorPage() {
             <button className="dash-btn btn-red" onClick={openDeleteModal}>
               🗑️ Delete Content / Course
             </button>
-            <button className="dash-btn">🌐 Enable Translation</button>
-            <button className="dash-btn">🎁 Course Incentivization</button>
+            {
+
+            //<button className="dash-btn">🌐 Enable Translation</button>
+            //<button className="dash-btn">🎁 Course Incentivization</button>
+            }
             <button className="dash-btn" onClick={handleViewStudents}>
               👥 View Students
             </button>
