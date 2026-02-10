@@ -68,7 +68,11 @@ function NavBar() {
             Courses
           </Link>
         </li>
-        <li>About</li>
+        <li>
+          <Link to="/about" style={{ textDecoration: "none", color: "inherit" }}>
+            About
+          </Link>
+        </li>
         <li>Services</li>
 
         <li>
