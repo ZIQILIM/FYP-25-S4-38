@@ -744,48 +744,6 @@ function CoursePage() {
 
               {/* === ASSESSMENTS TAB === */}
               {activeTab === "assessments" && (
-                // <>
-                //   <h3>Assessments</h3>
-                //   {selectedCourse.enrolledStudents?.includes(user.uid) ? (
-                //     <div className="file-list student-file-list">
-                //       {selectedCourse.content
-                //         ?.filter((f) => f.type === "quiz" || f.type === "test")
-                //         .map((file) => (
-                //           <div key={file.id} className="file-item">
-                //             <p>{file.title}</p>
-                //             <button
-                //               onClick={() =>
-                //                 handleContentClick(file.id, "quiz")
-                //               }
-                //             >
-                //               Start
-                //             </button>
-                //             {/* 2. NEW: AI Analysis Button */}
-                //             <button 
-                //             onClick={() => openAnalysis(file.id, file.title)} // New handler
-                //             style={{ 
-                //               backgroundColor: '#6c5ce7', 
-                //               color: 'white',
-                //               border: 'none',
-                //               padding: '5px 10px',
-                //               borderRadius: '4px',
-                //               cursor: 'pointer',
-                //               marginLeft: '10px'
-                //             }}
-                //           >
-
-                //               📊 Analyze Progress
-                //             </button>
-                //           </div>
-                //         ))}
-                //       {!selectedCourse.content?.some(
-                //         (f) => f.type === "quiz" || f.type === "test",
-                //       ) && <p>No assessments in this course.</p>}
-                //     </div>
-                //   ) : (
-                //     <p className="locked-text">Enroll to unlock assessments.</p>
-                //   )}
-                // </>
                 <>
                    {overallStudentStats && (
                       <div style={{
