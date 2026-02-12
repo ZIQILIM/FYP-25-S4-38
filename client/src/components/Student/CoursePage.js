@@ -745,7 +745,11 @@ function CoursePage() {
               {/* === ASSESSMENTS TAB === */}
               {activeTab === "assessments" && (
                 <>
-                   {overallStudentStats && (
+                   {!selectedCourse.enrolledStudents?.includes(user.uid)? (
+                    <p className="locked-text">Enroll to unlock assessments.</p>
+                   ):(
+                    <>
+                    {overallStudentStats && (
                       <div style={{
                         display: 'flex',
                         justifyContent: 'space-around',
@@ -821,6 +825,8 @@ function CoursePage() {
                             </div>
                         ))}
                     </div>
+                    </>
+                   )}
                 </>
               )}
 
@@ -828,7 +834,10 @@ function CoursePage() {
                 {activeTab === "leaderboard" && (
                   <div className="leaderboard-container">
                     <h3>Leaderboard</h3>
-                    
+                    {!selectedCourse.enrolledStudents?.includes(user.uid)?(
+                      <p className="locked-text">Enroll to unlock the leaderboard.</p>
+                    ):(
+                    <>
                     {selectedCourseGrades.length === 0 ? (
                       <div className="leaderboard-empty">
                         <p style={{ fontSize: "48px", margin: "0 0 10px 0" }}>🏆</p>
@@ -884,6 +893,8 @@ function CoursePage() {
                           );
                         })}
                       </div>
+                    )}
+                    </>
                     )}
                   </div>
                 )}
