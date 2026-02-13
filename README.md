@@ -1,4 +1,7 @@
 # Incentive-Driven Personalized Learning Platform
+## DEPLOYMENT
+deployed to: 
+https://learning-platform-aabbf.web.app/
 
 ## Project Structure
 
