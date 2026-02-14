@@ -172,8 +172,8 @@ function CourseReport({ courseId, onClose }) {
         // Switch endpoint based on the active tab
         const endpoint =
           activeTab === "summary"
-            ? "/api/analytics/instructor-report"
-            : "/api/analytics/grouped-report";
+            ? "/analytics/instructor-report"
+            : "/analytics/grouped-report";
 
         const res = await authFetch(
           `${process.env.REACT_APP_API_URL}${endpoint}`,
