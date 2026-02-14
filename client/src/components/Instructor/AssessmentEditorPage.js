@@ -68,7 +68,7 @@ function AssessmentEditorPage() {
 
     try {
       await authFetch(
-        "http://localhost:5000/api/instructors/add-assessment",
+        `${process.env.REACT_APP_API_URL}/instructors/add-assessment`,
         {
           method: "POST",
           body: JSON.stringify({

@@ -14,8 +14,8 @@ function AdminUserPage() {
   const fetchUsers = async (query = "") => {
     try {
       const url = query
-        ? `http://localhost:5000/api/admin/users?search=${query}`
-        : `http://localhost:5000/api/admin/users`;
+        ? `${process.env.REACT_APP_API_URL}/admin/users?search=${query}`
+        : `${process.env.REACT_APP_API_URL}/admin/users`;
       const data = await authFetch(url, {}, user);
       setUsers(data.data.users);
     } catch (err) {

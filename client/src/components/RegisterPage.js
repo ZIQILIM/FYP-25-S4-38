@@ -40,7 +40,7 @@ function RegisterPage() {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
 
       const user = userCredential.user;
@@ -55,7 +55,7 @@ function RegisterPage() {
       // Important: Create user profile in Firestore (backend)
 
       await authFetch(
-        "http://localhost:5000/api/auth/create-profile",
+        `${process.env.REACT_APP_API_URL}/auth/create-profile`,
         {
           method: "POST",
           headers: {
@@ -69,13 +69,13 @@ function RegisterPage() {
             role: role,
           }),
         },
-        user
+        user,
       );
 
       alert(
         `${
           role.charAt(0).toUpperCase() + role.slice(1)
-        } account created successfully!`
+        } account created successfully!`,
       );
 
       await signOut(auth); // log out user after registration

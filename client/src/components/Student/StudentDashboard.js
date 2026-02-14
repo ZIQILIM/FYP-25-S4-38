@@ -27,7 +27,7 @@ export default function StudentDashboard({ profile, gamification }) {
       if (!user) return;
       try {
         const response = await authFetch(
-          "http://localhost:5000/api/students/courses",
+          `${process.env.REACT_APP_API_URL}/students/courses`,
           { method: "GET" },
           user,
         );

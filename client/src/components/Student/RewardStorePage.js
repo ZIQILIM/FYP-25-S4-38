@@ -14,7 +14,8 @@ const REWARDS_DATA = [
   {
     id: "5NTUC",
     name: "$5 FairPrice Voucher",
-    description: "$5 NTUC FairPrice Voucher redeemable at FairPrice Supermarkets",
+    description:
+      "$5 NTUC FairPrice Voucher redeemable at FairPrice Supermarkets",
     price: 50,
     brand: "FairPrice",
     brandColor: "#e31837",
@@ -24,7 +25,8 @@ const REWARDS_DATA = [
   {
     id: "10NTUC",
     name: "$10 FairPrice Voucher",
-    description: "$10 NTUC FairPrice Voucher redeemable at FairPrice Supermarkets",
+    description:
+      "$10 NTUC FairPrice Voucher redeemable at FairPrice Supermarkets",
     price: 100,
     brand: "FairPrice",
     brandColor: "#e31837",
@@ -87,9 +89,9 @@ function RewardStorePage() {
       setLoading(true);
 
       const identityRes = await authFetch(
-        "http://localhost:5000/api/auth/current-user",
+        `${process.env.REACT_APP_API_URL}/auth/current-user`,
         { method: "GET" },
-        user
+        user,
       );
 
       if (!identityRes?.success) return;
@@ -98,9 +100,9 @@ function RewardStorePage() {
 
       if (identityRes.data.role === "student") {
         const studentRes = await authFetch(
-          "http://localhost:5000/api/students/profile",
+          `${process.env.REACT_APP_API_URL}/students/profile`,
           { method: "GET" },
-          user
+          user,
         );
 
         if (studentRes?.success) setGamification(studentRes.data.gamification);
@@ -121,9 +123,9 @@ function RewardStorePage() {
   const debugAddCurrency = async () => {
     try {
       await authFetch(
-        "http://localhost:5000/api/students/changecurrency",
+        `${process.env.REACT_APP_API_URL}/students/changecurrency`,
         { method: "POST", body: JSON.stringify({ points: 100 }) },
-        user
+        user,
       );
       await loadData();
     } catch (err) {
@@ -157,16 +159,22 @@ function RewardStorePage() {
 
       // Deduct currency
       await authFetch(
-        "http://localhost:5000/api/students/changecurrency",
-        { method: "POST", body: JSON.stringify({ points: -selectedReward.price }) },
-        user
+        `${process.env.REACT_APP_API_URL}/students/changecurrency`,
+        {
+          method: "POST",
+          body: JSON.stringify({ points: -selectedReward.price }),
+        },
+        user,
       );
 
       // Record transaction
       await authFetch(
-        "http://localhost:5000/api/students/updateTransactionHistory",
-        { method: "POST", body: JSON.stringify({ rewardID: selectedReward.id }) },
-        user
+        `${process.env.REACT_APP_API_URL}/students/updateTransactionHistory`,
+        {
+          method: "POST",
+          body: JSON.stringify({ rewardID: selectedReward.id }),
+        },
+        user,
       );
 
       await loadData();
@@ -201,7 +209,10 @@ function RewardStorePage() {
       </div>
 
       <div className="reward-actions">
-        <button className="action-btn history-btn" onClick={() => setModalStep("history")}>
+        <button
+          className="action-btn history-btn"
+          onClick={() => setModalStep("history")}
+        >
           Transaction History
         </button>
 
@@ -244,7 +255,7 @@ function RewardStorePage() {
 
               <div className="reward-image">
                 {reward.imageUrl ? (
-                  <img 
+                  <img
                     src={reward.imageUrl}
                     alt={reward.name}
                     className="reward-img"
@@ -279,13 +290,19 @@ function RewardStorePage() {
       {modalStep === "detail" && selectedReward && (
         <div className="modal-overlay" onClick={resetModalState}>
           <div className="reward-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close-btn" onClick={(e) => { e.stopPropagation(); resetModalState(); }}>
+            <button
+              className="modal-close-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                resetModalState();
+              }}
+            >
               ✕
             </button>
 
             <div className="modal-reward-icon-top">
               {selectedReward.imageUrl ? (
-                <img 
+                <img
                   src={selectedReward.imageUrl}
                   alt={selectedReward.name}
                   className="modal-reward-img"
@@ -305,8 +322,8 @@ function RewardStorePage() {
 
               {insufficientFunds && (
                 <div className="insufficient-funds-alert">
-                  ⚠️ Insufficient points! You need {selectedReward.price - balance} more
-                  points.
+                  ⚠️ Insufficient points! You need{" "}
+                  {selectedReward.price - balance} more points.
                 </div>
               )}
 
@@ -375,8 +392,14 @@ function RewardStorePage() {
             <h3 className="redeemed-item">{selectedReward.name}</h3>
 
             <div className="qr-code-container">
-              <p className="qr-instruction">Scan this QR code to claim your reward:</p>
-              <img src={qrcode} alt="Redemption QR Code" className="qr-code-image" />
+              <p className="qr-instruction">
+                Scan this QR code to claim your reward:
+              </p>
+              <img
+                src={qrcode}
+                alt="Redemption QR Code"
+                className="qr-code-image"
+              />
             </div>
 
             <button className="done-btn" onClick={resetModalState}>
@@ -398,16 +421,19 @@ function RewardStorePage() {
             <div className="history-list">
               {gamification?.incentiveTransactionHistory?.length > 0 ? (
                 gamification.incentiveTransactionHistory.map((entry, index) => {
-                  const rewardInfo = REWARDS_DATA.find((r) => r.id === entry.reward);
+                  const rewardInfo = REWARDS_DATA.find(
+                    (r) => r.id === entry.reward,
+                  );
 
                   return (
                     <div key={index} className="history-item">
-
                       <div className="history-details">
                         <span className="history-reward-name">
                           {rewardInfo?.name || entry.reward}
                         </span>
-                        <span className="history-date">Redeemed on: {entry.dateRedeemed}</span>
+                        <span className="history-date">
+                          Redeemed on: {entry.dateRedeemed}
+                        </span>
                       </div>
 
                       <div className="history-points">

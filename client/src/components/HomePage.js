@@ -32,9 +32,9 @@ function NavBar() {
     const fetchNavDetails = async () => {
       try {
         const response = await authFetch(
-          "http://localhost:5000/api/auth/current-user",
+          `${process.env.REACT_APP_API_URL}/auth/current-user`,
           {},
-          user
+          user,
         );
 
         if (response.success) {
@@ -69,18 +69,20 @@ function NavBar() {
           </Link>
         </li>
         <li>
-          <Link to="/about" style={{ textDecoration: "none", color: "inherit" }}>
+          <Link
+            to="/about"
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
             About
           </Link>
         </li>
         <li>Services</li>
 
         <li>
-        <Link to="/team" style={{ textDecoration: "none", color: "inherit" }}>
-          Contact
-        </Link>
+          <Link to="/team" style={{ textDecoration: "none", color: "inherit" }}>
+            Contact
+          </Link>
         </li>
-        
       </ul>
       <div className="home-nav-right">
         {!user ? (
@@ -159,9 +161,9 @@ function HomePage() {
         // 1. Fetch User Identity & Role first
         // Note: Your authController.getCurrentUser returns data directly in result.data
         const identityRes = await authFetch(
-          "http://localhost:5000/api/auth/current-user",
+          `${process.env.REACT_APP_API_URL}/auth/current-user`,
           { method: "GET" },
-          user
+          user,
         );
 
         if (identityRes.success) {
@@ -172,9 +174,9 @@ function HomePage() {
 
           if (userProfile.role === "student") {
             const loginRes = await authFetch(
-              "http://localhost:5000/api/students/login",
+              `${process.env.REACT_APP_API_URL}/students/login`,
               { method: "POST" },
-              user
+              user,
             );
 
             // Save the login result, but DO NOT open the modal yet
@@ -190,9 +192,9 @@ function HomePage() {
             // 3.fetch full Gamification Data
             // We use the student specific route for this
             const studentRes = await authFetch(
-              "http://localhost:5000/api/students/profile",
+              `${process.env.REACT_APP_API_URL}/students/profile`,
               { method: "GET" },
-              user
+              user,
             );
 
             if (studentRes.success) {
@@ -252,9 +254,9 @@ function HomePage() {
     try {
       // call claim reaward endpoint
       const res = await authFetch(
-        "http://localhost:5000/api/students/claim-reward",
+        `${process.env.REACT_APP_API_URL}/students/claim-reward`,
         { method: "POST" },
-        user
+        user,
       );
 
       if (res.success) {
@@ -262,9 +264,9 @@ function HomePage() {
 
         //refresh gamification data points
         const updatedProfile = await authFetch(
-          "http://localhost:5000/api/students/profile",
+          `${process.env.REACT_APP_API_URL}/students/profile`,
           { method: "GET" },
-          user
+          user,
         );
 
         if (updatedProfile.success) {
@@ -279,9 +281,9 @@ function HomePage() {
         // 1. Force the UI to update so the button becomes disabled
         // We re-fetch the profile to get the 'lastDailyReward' date from the DB
         const updatedProfile = await authFetch(
-          "http://localhost:5000/api/students/profile",
+          `${process.env.REACT_APP_API_URL}/students/profile`,
           {},
-          user
+          user,
         );
         if (updatedProfile.success) {
           setGamification(updatedProfile.data.gamification);

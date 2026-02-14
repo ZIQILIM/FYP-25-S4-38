@@ -22,18 +22,18 @@ function InternshipPostingPage() {
     minScore: 60,
   });
 
-  const[AMRpercent, setAMRper] = useState(0);
-  const[AMRcourse, setAMRCid] = useState(null);
-  const[courselist, setclist] = useState([]);
-  const[AMRlist, setAMRlist] = useState([]);
+  const [AMRpercent, setAMRper] = useState(0);
+  const [AMRcourse, setAMRCid] = useState(null);
+  const [courselist, setclist] = useState([]);
+  const [AMRlist, setAMRlist] = useState([]);
 
   // 1. Fetch My Postings
   const fetchPostings = async () => {
     try {
       const res = await authFetch(
-        "http://localhost:5000/api/internships/my-postings",
+        `${process.env.REACT_APP_API_URL}/internships/my-postings`,
         {},
-        user
+        user,
       );
       if (res.success) setPostings(res.data);
     } catch (error) {
@@ -41,37 +41,40 @@ function InternshipPostingPage() {
     }
   };
 
-  const getSingleStudentGrade =async (sid, cid) => {
-    try{
-      const res = await authFetch("http://localhost:5000/api/internships/getSingleStudentGrade", {}, user);
-      if(res.success){
+  const getSingleStudentGrade = async (sid, cid) => {
+    try {
+      const res = await authFetch(
+        `${process.env.REACT_APP_API_URL}/internships/getSingleStudentGrade`,
+        {},
+        user,
+      );
+      if (res.success) {
         return res.data;
       }
-    }catch (error) {
+    } catch (error) {
       console.error(error);
     }
-  }
+  };
 
   const getCourseList = async () => {
-    try{
+    try {
       const res = await authFetch(
-        "http://localhost:5000/api/internships/getAllCourses",
+        `${process.env.REACT_APP_API_URL}/internships/getAllCourses`,
         {},
-        user
+        user,
       );
-      if(res.success)
-      {
+      if (res.success) {
         console.log("Got courses");
         let x = [];
-        res.data.forEach(element => {
-          x.push({cid: element.id, c_name: element.title})
+        res.data.forEach((element) => {
+          x.push({ cid: element.id, c_name: element.title });
         });
         setclist(x);
       }
-    }catch (error) {
+    } catch (error) {
       console.error(error);
     }
-  }
+  };
 
   useEffect(() => {
     fetchPostings();
@@ -84,12 +87,12 @@ function InternshipPostingPage() {
   const handleCreate = async () => {
     try {
       await authFetch(
-        "http://localhost:5000/api/internships/create",
+        `${process.env.REACT_APP_API_URL}/internships/create`,
         {
           method: "POST",
           body: JSON.stringify(newJob),
         },
-        user
+        user,
       );
       setShowCreate(false);
       fetchPostings();
@@ -100,26 +103,34 @@ function InternshipPostingPage() {
   };
 
   const getGrades = async () => {
-    try{
-      const res = await authFetch("http://localhost:5000/api/internships/getallgrades", {}, user);
-      if(res.success){
+    try {
+      const res = await authFetch(
+        `${process.env.REACT_APP_API_URL}/internships/getallgrades`,
+        {},
+        user,
+      );
+      if (res.success) {
         setAllGrades(res.data);
       }
-    } catch(error){
+    } catch (error) {
       console.error(error);
     }
-  }
+  };
 
   const getStudents = async () => {
-    try{
-      const res = await authFetch("http://localhost:5000/api/internships/getAllStudents", {}, user);
-      if(res.success){
+    try {
+      const res = await authFetch(
+        `${process.env.REACT_APP_API_URL}/internships/getAllStudents`,
+        {},
+        user,
+      );
+      if (res.success) {
         setAllStudents(res.data);
       }
-    }catch (error) {
+    } catch (error) {
       console.error(error);
     }
-  }
+  };
 
   const viewEligibleCandidates = async (job) => {
     setViewingPostingId(job.id);
@@ -128,85 +139,81 @@ function InternshipPostingPage() {
     let averageScoreReq = job.minScore;
     let metavgcrit = false;
     let list = [];
-    avgstudent.forEach(element => {
+    avgstudent.forEach((element) => {
       let metspeccrit = [];
       let eligible = true;
       //get student grade course
-      if(specifiedcourses !== undefined)
-        {
-          specifiedcourses.forEach(x => {
-            allGrades.grades.forEach(z=> {
-              if(z.studentId === element.uid && z.courseId === x.cid){
-                //matching grade
-                if(z.total_Grade > x.percentage)
-                {
-                  metspeccrit.push(true);
-                }
-                else{
-                  metspeccrit.push(false);
-                }
+      if (specifiedcourses !== undefined) {
+        specifiedcourses.forEach((x) => {
+          allGrades.grades.forEach((z) => {
+            if (z.studentId === element.uid && z.courseId === x.cid) {
+              //matching grade
+              if (z.total_Grade > x.percentage) {
+                metspeccrit.push(true);
+              } else {
+                metspeccrit.push(false);
               }
-            })
-          
+            }
+          });
         });
-      }
-      else{
+      } else {
         eligible = false;
       }
 
-      if(metspeccrit.length > 0)
-      {
-        metspeccrit.forEach(val => {
-          if(val === false){
+      if (metspeccrit.length > 0) {
+        metspeccrit.forEach((val) => {
+          if (val === false) {
             eligible = false;
           }
-        })
-      }
-      else{
-        eligible= false;
+        });
+      } else {
+        eligible = false;
       }
 
-      if(eligible === true)
-        list.push(element);
+      if (eligible === true) list.push(element);
     });
     setEPPL(list);
     setCandidates(list);
-  }
+  };
 
   // 3. View Qualified Candidates (The Headhunting Logic)
   const viewCandidates = async (postingId) => {
     //setViewingPostingId(postingId);
     try {
       const res = await authFetch(
-        `http://localhost:5000/api/internships/${postingId}/candidates`,
+        `${process.env.REACT_APP_API_URL}/internships/${postingId}/candidates`,
         {},
-        user
+        user,
       );
-      if (res.success) return res.data;//setCandidates(res.data);
+      if (res.success) return res.data; //setCandidates(res.data);
     } catch (e) {
       alert("Error fetching candidates");
     }
   };
 
-  function enableAddAdditionalRequirements(){
+  function enableAddAdditionalRequirements() {
     setAMR(true);
   }
 
-  function setAMRpercentage (e) {
-    setAMRper(e.target.value)
+  function setAMRpercentage(e) {
+    setAMRper(e.target.value);
   }
 
-  function setAMRCourse (e) {
-    setAMRCid(e)
+  function setAMRCourse(e) {
+    setAMRCid(e);
   }
 
-  function clearSelectedCourse(){
+  function clearSelectedCourse() {
     setAMRCid(null);
   }
 
-  function AddRequirement(){
+  function AddRequirement() {
     let x = AMRlist;
-    x.push({cid: AMRcourse.cid, c_name: AMRcourse.c_name, percentage: AMRpercent})
+    x.push({
+      cid: AMRcourse.cid,
+      c_name: AMRcourse.c_name,
+      percentage: AMRpercent,
+    });
     setAMRlist(x);
     clearSelectedCourse();
 
@@ -214,13 +221,12 @@ function InternshipPostingPage() {
     y.additionalrequirements = x;
   }
 
-  function removeEntry(removethis){
+  function removeEntry(removethis) {
     const updated = AMRlist.filter((_, i) => i !== removethis);
     setAMRlist(updated);
     let y = newJob;
     y.additionalrequirements = updated;
   }
-  
 
   return (
     <div className="admin-page">
@@ -251,18 +257,15 @@ function InternshipPostingPage() {
                 </p>
                 <p>
                   <strong>Requirement:</strong> Min {job.minScore}% Avg Score
-                  {
-                    job.additionalrequirements !== undefined && (
-                      <div>
-                      {
-                        job.additionalrequirements.map((entry) => (
-                          <div>{entry.c_name}: {entry.percentage}</div>
-                        ))
-                      }
-                      </div>
-                    )
-                    
-                  }
+                  {job.additionalrequirements !== undefined && (
+                    <div>
+                      {job.additionalrequirements.map((entry) => (
+                        <div>
+                          {entry.c_name}: {entry.percentage}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </p>
                 <button
                   className="admin-btn btn-green"
@@ -309,47 +312,50 @@ function InternshipPostingPage() {
                     setNewJob({ ...newJob, minScore: e.target.value })
                   }
                 />
-                {
-                  AMRlist.length !== 0 && (
-                    <div>
-                    {
-                      AMRlist.map((req, idx) => (
-                        <div>
-                          <span>{idx + 1}: {req.c_name}: {req.percentage} <button onClick={() => removeEntry(idx)}>Remove</button></span>
-                        </div>
-                      ))
-                    }
-                    </div>
-                  )
-                }
-                {
-                  showAddMoreReqs === true && (
-                    <div>
-                      {
-                        AMRcourse === null ? (
-                          <button onClick = {() => setSCL(true)}>Select Course</button>
-                        ) : (
-                          <div>Selected: {AMRcourse.c_name}
-                            <button onClick={clearSelectedCourse}>Clear Selection</button>
-                          </div>
-                        )
-                      }
-                      <label>Minimum Course Score Criteria (%)</label>
-                        <input
-                          type="number"
-                          className="admin-input"
-                          onChange={(setAMRpercentage)}
-                        />
-                        {
-                          AMRcourse !== null && (
-                            <button onClick={AddRequirement}>Add Requirement</button>
-                          )
-                        }
-                    </div>
-                  )
-                }
+                {AMRlist.length !== 0 && (
+                  <div>
+                    {AMRlist.map((req, idx) => (
+                      <div>
+                        <span>
+                          {idx + 1}: {req.c_name}: {req.percentage}{" "}
+                          <button onClick={() => removeEntry(idx)}>
+                            Remove
+                          </button>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {showAddMoreReqs === true && (
+                  <div>
+                    {AMRcourse === null ? (
+                      <button onClick={() => setSCL(true)}>
+                        Select Course
+                      </button>
+                    ) : (
+                      <div>
+                        Selected: {AMRcourse.c_name}
+                        <button onClick={clearSelectedCourse}>
+                          Clear Selection
+                        </button>
+                      </div>
+                    )}
+                    <label>Minimum Course Score Criteria (%)</label>
+                    <input
+                      type="number"
+                      className="admin-input"
+                      onChange={setAMRpercentage}
+                    />
+                    {AMRcourse !== null && (
+                      <button onClick={AddRequirement}>Add Requirement</button>
+                    )}
+                  </div>
+                )}
               </div>
-              <button className="admin-btn btn-green" onClick={enableAddAdditionalRequirements}>
+              <button
+                className="admin-btn btn-green"
+                onClick={enableAddAdditionalRequirements}
+              >
                 Add Additional Requirements
               </button>
               <button className="admin-btn btn-green" onClick={handleCreate}>
@@ -419,12 +425,19 @@ function InternshipPostingPage() {
           <div className="modal-overlay">
             <div className="modal-box" style={{ textAlign: "left" }}>
               <h2>Course List</h2>
-              {
-                courselist.map((c_entry) => (
-                  <div>{c_entry.c_name} <button onClick={() => {setAMRCourse(c_entry);setSCL(false);}}>Select</button></div>
-                )
-                )
-              }
+              {courselist.map((c_entry) => (
+                <div>
+                  {c_entry.c_name}{" "}
+                  <button
+                    onClick={() => {
+                      setAMRCourse(c_entry);
+                      setSCL(false);
+                    }}
+                  >
+                    Select
+                  </button>
+                </div>
+              ))}
               <button className="text-btn" onClick={() => setSCL(false)}>
                 Close
               </button>

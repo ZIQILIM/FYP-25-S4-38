@@ -62,7 +62,7 @@ function CourseEditorPage() {
   const fetchCourses = async () => {
     try {
       const res = await authFetch(
-        "http://localhost:5000/api/instructors/my-courses",
+        `${process.env.REACT_APP_API_URL}/instructors/my-courses`,
         {},
         user,
       );
@@ -102,7 +102,7 @@ function CourseEditorPage() {
     setModalLoading(true);
     try {
       const res = await authFetch(
-        `http://localhost:5000/api/instructors/assessment/${assessmentId}`,
+        `${process.env.REACT_APP_API_URL}/instructors/assessment/${assessmentId}`,
         {},
         user,
       );
@@ -161,18 +161,20 @@ function CourseEditorPage() {
   };
 
   const openReviewsModal = async () => {
-    if(!selectedCourse) return;
+    if (!selectedCourse) return;
     setModalLoading(true);
-    try{
-      const res = await authFetch(`http://localhost:5000/api/instructors/courses/${selectedCourse.id}/reviews`,
-      {},
-      user);
-      if(res.success) {
+    try {
+      const res = await authFetch(
+        `${process.env.REACT_APP_API_URL}/instructors/courses/${selectedCourse.id}/reviews`,
+        {},
+        user,
+      );
+      if (res.success) {
         setReviews(res.data);
         setModalType("course_reviews");
         setIsModalOpen(true);
       }
-    } catch(err) {
+    } catch (err) {
       console.error("Error fetching reviews:", err);
       alert("Failed to fetch reviews");
     } finally {
@@ -212,7 +214,7 @@ function CourseEditorPage() {
     setModalLoading(true);
     try {
       const res = await authFetch(
-        `http://localhost:5000/api/instructors/students/${selectedCourse.id}`,
+        `${process.env.REACT_APP_API_URL}/instructors/students/${selectedCourse.id}`,
         {},
         user,
       );
@@ -233,7 +235,7 @@ function CourseEditorPage() {
     //setModalLoading(true);
     try {
       const res = await authFetch(
-        `http://localhost:5000/api/instructors/students/${selectedCourse.id}`,
+        `${process.env.REACT_APP_API_URL}/instructors/students/${selectedCourse.id}`,
         {},
         user,
       );
@@ -253,7 +255,7 @@ function CourseEditorPage() {
     if (!selectedCourse) return;
     try {
       const res = await authFetch(
-        "http://localhost:5000/api/instructors/getalltestattempts",
+        `${process.env.REACT_APP_API_URL}/instructors/getalltestattempts`,
         {},
         user,
       );
@@ -270,7 +272,7 @@ function CourseEditorPage() {
     if (!selectedStudentForBadge) return;
     try {
       await authFetch(
-        "http://localhost:5000/api/instructors/award-badge",
+        `${process.env.REACT_APP_API_URL}/instructors/award-badge`,
         {
           method: "POST",
           body: JSON.stringify({
@@ -295,7 +297,7 @@ function CourseEditorPage() {
     setModalLoading(true);
     try {
       const res = await authFetch(
-        "http://localhost:5000/api/instructors/create-course",
+        `${process.env.REACT_APP_API_URL}/instructors/create-course`,
         {
           method: "POST",
           body: JSON.stringify(formData),
@@ -328,7 +330,7 @@ function CourseEditorPage() {
       const url = await getDownloadURL(storageRef);
 
       await authFetch(
-        "http://localhost:5000/api/instructors/add-content",
+        `${process.env.REACT_APP_API_URL}/instructors/add-content`,
         {
           method: "POST",
           body: JSON.stringify({
@@ -361,7 +363,7 @@ function CourseEditorPage() {
     setModalLoading(true);
     try {
       await authFetch(
-        "http://localhost:5000/api/instructors/update-course",
+        `${process.env.REACT_APP_API_URL}/instructors/update-course`,
         {
           method: "PUT",
           body: JSON.stringify({ ...formData, courseId: selectedCourse.id }),
@@ -383,7 +385,7 @@ function CourseEditorPage() {
     setModalLoading(true);
     try {
       await authFetch(
-        `http://localhost:5000/api/instructors/delete-course/${selectedCourse.id}`,
+        `${process.env.REACT_APP_API_URL}/instructors/delete-course/${selectedCourse.id}`,
         { method: "DELETE" },
         user,
       );
@@ -402,7 +404,7 @@ function CourseEditorPage() {
     if (!window.confirm("Delete this file?")) return;
     try {
       await authFetch(
-        `http://localhost:5000/api/instructors/remove-content/${selectedCourse.id}/${contentId}`,
+        `${process.env.REACT_APP_API_URL}/instructors/remove-content/${selectedCourse.id}/${contentId}`,
         { method: "DELETE" },
         user,
       );
@@ -414,18 +416,17 @@ function CourseEditorPage() {
   };
 
   async function forloopAnnouncement() {
-    if(announcementContent.length > 0){
+    if (announcementContent.length > 0) {
       setModalLoading(true);
-      
-      for(const element of enrolledStudents) {
+
+      for (const element of enrolledStudents) {
         await handleSendAnnouncement(element.uid);
       }
-      
+
       setModalLoading(false);
       closeModal();
       alert("Announcements sent to all students!");
-    }
-    else{
+    } else {
       alert("Nothing to send!");
     }
   }
@@ -433,12 +434,13 @@ function CourseEditorPage() {
   const handleSendAnnouncement = async (msgTarget) => {
     let y = new Date();
     let subject = selectedCourse.title + " Announcement";
-    
-    const senderName = user?.displayName || 
-                       selectedCourse?.instructorName ||
-                       user?.email?.split('@')[0] || 
-                       "Instructor";
-    
+
+    const senderName =
+      user?.displayName ||
+      selectedCourse?.instructorName ||
+      user?.email?.split("@")[0] ||
+      "Instructor";
+
     let x = {
       sender_user_id: "SYSTEM_ANNOUNCEMENT",
       reciver_user_id: msgTarget,
@@ -450,7 +452,7 @@ function CourseEditorPage() {
 
     try {
       await authFetch(
-        "http://localhost:5000/api/messages/courseannouncement",
+        `${process.env.REACT_APP_API_URL}/messages/courseannouncement`,
         { method: "POST", body: JSON.stringify({ x }) },
         user,
       );
@@ -559,14 +561,18 @@ function CourseEditorPage() {
               🗑️ Delete Content / Course
             </button>
             {
-
-            //<button className="dash-btn">🌐 Enable Translation</button>
-            //<button className="dash-btn">🎁 Course Incentivization</button>
+              //<button className="dash-btn">🌐 Enable Translation</button>
+              //<button className="dash-btn">🎁 Course Incentivization</button>
             }
             <button className="dash-btn" onClick={handleViewStudents}>
               👥 View Students
             </button>
-            <button className="dash-btn" onClick={() => setIsAnalysisModalOpen(true)}>📊 Analyze Data</button>
+            <button
+              className="dash-btn"
+              onClick={() => setIsAnalysisModalOpen(true)}
+            >
+              📊 Analyze Data
+            </button>
             <button className="dash-btn" onClick={handleGradeTests}>
               📊 Grade Tests
             </button>
@@ -885,111 +891,131 @@ function CourseEditorPage() {
             )}
 
             {modalType === "testlist" && (
-            <div>
-              <h2 style={{ 
-                textAlign: "center", 
-                color: "#2c3e50",
-                marginBottom: "24px",
-                fontSize: "24px",
-                fontWeight: "700"
-              }}>
-                Grade Course Tests
-              </h2>
-              
-              <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-                {selectedCourse.content.map((file) => (
-                  <div key={file.id}>
-                    {file.type === "test" && (
-                      <div style={{
-                        backgroundColor: "#f8f9fa",
-                        padding: "20px",
-                        borderRadius: "12px",
-                        marginBottom: "16px",
-                        border: "2px solid #e0e0e0"
-                      }}>
-                        <h3 style={{ 
-                          margin: "0 0 16px 0",
-                          color: "#2c3e50",
-                          fontSize: "18px",
-                          fontWeight: "600"
-                        }}>
-                          {file.title}
-                        </h3>
-                        
-                        {testGradeArray.map((docs) => (
-                          <div key={docs.id}>
-                            {file.id === docs.test_ID && (
-                              <div style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                backgroundColor: "white",
-                                padding: "12px 16px",
-                                borderRadius: "8px",
-                                marginBottom: "8px",
-                                border: "1px solid #e0e0e0"
-                              }}>
-                                {enrolledStudents.map((student) => (
-                                  <div key={student.uid}>
-                                    {student.uid === docs.user && (
-                                      <span style={{
-                                        fontSize: "15px",
-                                        fontWeight: "600",
-                                        color: "#2c3e50"
-                                      }}>
-                                        {student.displayName}
-                                      </span>
-                                    )}
-                                  </div>
-                                ))}
-                                
-                                <button
-                                  onClick={() => navigate(`/instructor/course/testgrading/${docs.id}`)}
+              <div>
+                <h2
+                  style={{
+                    textAlign: "center",
+                    color: "#2c3e50",
+                    marginBottom: "24px",
+                    fontSize: "24px",
+                    fontWeight: "700",
+                  }}
+                >
+                  Grade Course Tests
+                </h2>
+
+                <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+                  {selectedCourse.content.map((file) => (
+                    <div key={file.id}>
+                      {file.type === "test" && (
+                        <div
+                          style={{
+                            backgroundColor: "#f8f9fa",
+                            padding: "20px",
+                            borderRadius: "12px",
+                            marginBottom: "16px",
+                            border: "2px solid #e0e0e0",
+                          }}
+                        >
+                          <h3
+                            style={{
+                              margin: "0 0 16px 0",
+                              color: "#2c3e50",
+                              fontSize: "18px",
+                              fontWeight: "600",
+                            }}
+                          >
+                            {file.title}
+                          </h3>
+
+                          {testGradeArray.map((docs) => (
+                            <div key={docs.id}>
+                              {file.id === docs.test_ID && (
+                                <div
                                   style={{
-                                    backgroundColor: "#4cd137",
-                                    color: "white",
-                                    border: "none",
-                                    padding: "8px 20px",
-                                    borderRadius: "6px",
-                                    fontSize: "14px",
-                                    fontWeight: "600",
-                                    cursor: "pointer",
-                                    transition: "all 0.2s"
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    backgroundColor: "white",
+                                    padding: "12px 16px",
+                                    borderRadius: "8px",
+                                    marginBottom: "8px",
+                                    border: "1px solid #e0e0e0",
                                   }}
-                                  onMouseOver={(e) => e.target.style.backgroundColor = "#44bd32"}
-                                  onMouseOut={(e) => e.target.style.backgroundColor = "#4cd137"}
                                 >
-                                  Grade
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                                  {enrolledStudents.map((student) => (
+                                    <div key={student.uid}>
+                                      {student.uid === docs.user && (
+                                        <span
+                                          style={{
+                                            fontSize: "15px",
+                                            fontWeight: "600",
+                                            color: "#2c3e50",
+                                          }}
+                                        >
+                                          {student.displayName}
+                                        </span>
+                                      )}
+                                    </div>
+                                  ))}
+
+                                  <button
+                                    onClick={() =>
+                                      navigate(
+                                        `/instructor/course/testgrading/${docs.id}`,
+                                      )
+                                    }
+                                    style={{
+                                      backgroundColor: "#4cd137",
+                                      color: "white",
+                                      border: "none",
+                                      padding: "8px 20px",
+                                      borderRadius: "6px",
+                                      fontSize: "14px",
+                                      fontWeight: "600",
+                                      cursor: "pointer",
+                                      transition: "all 0.2s",
+                                    }}
+                                    onMouseOver={(e) =>
+                                      (e.target.style.backgroundColor =
+                                        "#44bd32")
+                                    }
+                                    onMouseOut={(e) =>
+                                      (e.target.style.backgroundColor =
+                                        "#4cd137")
+                                    }
+                                  >
+                                    Grade
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={closeModal}
+                  style={{
+                    width: "100%",
+                    marginTop: "20px",
+                    padding: "12px",
+                    backgroundColor: "#2c3e50",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontSize: "15px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                  }}
+                >
+                  Close
+                </button>
               </div>
-              
-              <button 
-                onClick={closeModal} 
-                style={{
-                  width: "100%",
-                  marginTop: "20px",
-                  padding: "12px",
-                  backgroundColor: "#2c3e50",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "8px",
-                  fontSize: "15px",
-                  fontWeight: "600",
-                  cursor: "pointer"
-                }}
-              >
-                Close
-              </button>
-            </div>
-          )}          
+            )}
 
             {/* 4. NEW: Modal View for Assessment Details */}
             {modalType === "view_assessment_details" && viewingAssessment && (
@@ -1133,98 +1159,130 @@ function CourseEditorPage() {
             )}
             {/* 6. ANNOUNCEMENT*/}
             {modalType === "course_announcement" && (
-                <div>
-                  <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Make Announcement</h2>
-                  
-                  <div style={{ marginBottom: "20px" }}>
-                    <label style={{ 
-                      display: "block", 
-                      marginBottom: "8px", 
+              <div>
+                <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
+                  Make Announcement
+                </h2>
+
+                <div style={{ marginBottom: "20px" }}>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "8px",
                       fontWeight: "600",
-                      fontSize: "14px" 
-                    }}>
-                      Announcement Message
-                    </label>
-                    <textarea
-                      id="announcementinput"
-                      onChange={handleAnnouncementTextChange}
-                      placeholder="Type your announcement here..."
-                      style={{
-                        width: "100%",
-                        padding: "12px",
-                        border: "1px solid #ddd",
-                        borderRadius: "8px",
-                        fontSize: "14px",
-                        minHeight: "120px",
-                        resize: "vertical",
-                        fontFamily: "inherit",
-                        boxSizing: "border-box"
-                      }}
-                    />
-                  </div>
-                  
-                  <div style={{ display: "flex", gap: "10px" }}>
-                    <button 
-                      onClick={forloopAnnouncement}
-                      className="modal-btn"
-                      style={{ flex: 1 }}
-                    >
-                      Send
-                    </button>
-                    <button 
-                      onClick={closeModal} 
-                      className="text-btn"
-                      style={{
-                        padding: "12px 24px",
-                        border: "1px solid #ddd",
-                        borderRadius: "8px",
-                        backgroundColor: "white",
-                        cursor: "pointer"
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-    
-          {/* 7. [NEW] REVIEWS MODAL */}
-          {modalType === "course_reviews" && (
-            <div>
-              <h2>Course Reviews</h2>
-              <div className="file-list" style={{ maxHeight: "400px", overflowY: "auto", textAlign: "left" }}>
-                {reviews.length > 0 ? (
-                  reviews.map((review) => (
-                    <div key={review.id} style={{ 
-                      padding: "15px", 
-                      borderBottom: "1px solid #eee",
-                      backgroundColor: "#f9f9f9",
+                      fontSize: "14px",
+                    }}
+                  >
+                    Announcement Message
+                  </label>
+                  <textarea
+                    id="announcementinput"
+                    onChange={handleAnnouncementTextChange}
+                    placeholder="Type your announcement here..."
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      border: "1px solid #ddd",
                       borderRadius: "8px",
-                      marginBottom: "10px"
-                    }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                        <strong>{review.studentName || "Anonymous Student"}</strong>
-                        <span style={{ color: "#f1c40f" }}>
-                          {"⭐".repeat(review.rating || 5)}
-                        </span>
-                      </div>
-                      <p style={{ fontSize: "14px", margin: "5px 0" }}>{review.description}</p>
-                      <small style={{ color: "#888" }}>
-                        {review.createdAt?.seconds 
-                          ? new Date(review.createdAt.seconds * 1000).toLocaleDateString()
-                          : "Recently"}
-                      </small>
-                    </div>
-                  ))
-                ) : (
-                  <p style={{ textAlign: "center", padding: "20px" }}>No reviews yet for this course.</p>
-                )}
+                      fontSize: "14px",
+                      minHeight: "120px",
+                      resize: "vertical",
+                      fontFamily: "inherit",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <button
+                    onClick={forloopAnnouncement}
+                    className="modal-btn"
+                    style={{ flex: 1 }}
+                  >
+                    Send
+                  </button>
+                  <button
+                    onClick={closeModal}
+                    className="text-btn"
+                    style={{
+                      padding: "12px 24px",
+                      border: "1px solid #ddd",
+                      borderRadius: "8px",
+                      backgroundColor: "white",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
-              <button onClick={closeModal} className="modal-btn" style={{ marginTop: "15px" }}>
-                Close
-              </button>
-            </div>
-          )}
+            )}
+
+            {/* 7. [NEW] REVIEWS MODAL */}
+            {modalType === "course_reviews" && (
+              <div>
+                <h2>Course Reviews</h2>
+                <div
+                  className="file-list"
+                  style={{
+                    maxHeight: "400px",
+                    overflowY: "auto",
+                    textAlign: "left",
+                  }}
+                >
+                  {reviews.length > 0 ? (
+                    reviews.map((review) => (
+                      <div
+                        key={review.id}
+                        style={{
+                          padding: "15px",
+                          borderBottom: "1px solid #eee",
+                          backgroundColor: "#f9f9f9",
+                          borderRadius: "8px",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            marginBottom: "5px",
+                          }}
+                        >
+                          <strong>
+                            {review.studentName || "Anonymous Student"}
+                          </strong>
+                          <span style={{ color: "#f1c40f" }}>
+                            {"⭐".repeat(review.rating || 5)}
+                          </span>
+                        </div>
+                        <p style={{ fontSize: "14px", margin: "5px 0" }}>
+                          {review.description}
+                        </p>
+                        <small style={{ color: "#888" }}>
+                          {review.createdAt?.seconds
+                            ? new Date(
+                                review.createdAt.seconds * 1000,
+                              ).toLocaleDateString()
+                            : "Recently"}
+                        </small>
+                      </div>
+                    ))
+                  ) : (
+                    <p style={{ textAlign: "center", padding: "20px" }}>
+                      No reviews yet for this course.
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={closeModal}
+                  className="modal-btn"
+                  style={{ marginTop: "15px" }}
+                >
+                  Close
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

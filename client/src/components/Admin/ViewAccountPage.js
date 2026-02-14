@@ -19,9 +19,9 @@ function ViewAccountPage() {
     const loadData = async () => {
       try {
         const res = await authFetch(
-          `http://localhost:5000/api/admin/users/${userId}`,
+          `${process.env.REACT_APP_API_URL}/admin/users/${userId}`,
           {},
-          user
+          user,
         );
         setProfile(res.data);
         setOriginalRole(res.data.role);
@@ -37,7 +37,7 @@ function ViewAccountPage() {
   const handleSave = async () => {
     try {
       await authFetch(
-        `http://localhost:5000/api/admin/users/${userId}`,
+        `${process.env.REACT_APP_API_URL}/admin/users/${userId}`,
         {
           method: "PUT",
           body: JSON.stringify({
@@ -45,17 +45,17 @@ function ViewAccountPage() {
             lastName: profile.lastName,
           }),
         },
-        user
+        user,
       );
 
       if (profile.role !== originalRole) {
         await authFetch(
-          `http://localhost:5000/api/admin/users/${userId}/role`,
+          `${process.env.REACT_APP_API_URL}/admin/users/${userId}/role`,
           {
             method: "PUT",
             body: JSON.stringify({ newRole: profile.role }),
           },
-          user
+          user,
         );
         setOriginalRole(profile.role);
       }
@@ -70,12 +70,12 @@ function ViewAccountPage() {
     if (window.confirm(`Are you sure?`)) {
       try {
         await authFetch(
-          `http://localhost:5000/api/admin/users/${userId}/status`,
+          `${process.env.REACT_APP_API_URL}/admin/users/${userId}/status`,
           {
             method: "PUT",
             body: JSON.stringify({ disable: !profile.isDisabled }),
           },
-          user
+          user,
         );
         setProfile({ ...profile, isDisabled: !profile.isDisabled });
       } catch (err) {
