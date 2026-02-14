@@ -40,18 +40,18 @@ function ProfilePage() {
     if (!user) return;
     try {
       const identityRes = await authFetch(
-        "http://localhost:5000/api/auth/current-user",
+        `${process.env.REACT_APP_API_URL}/auth/current-user`,
         {},
-        user
+        user,
       );
       if (identityRes.success) {
         setProfileData(identityRes.data);
 
         if (identityRes.data.role === "student") {
           const studentRes = await authFetch(
-            "http://localhost:5000/api/students/profile",
+            `${process.env.REACT_APP_API_URL}/students/profile`,
             {},
-            user
+            user,
           );
           if (studentRes.success) setGamification(studentRes.data.gamification);
         }
@@ -86,12 +86,12 @@ function ProfilePage() {
     e.preventDefault();
     try {
       await authFetch(
-        "http://localhost:5000/api/auth/update-profile",
+        `${process.env.REACT_APP_API_URL}/auth/update-profile`,
         {
           method: "PUT",
           body: JSON.stringify(editForm),
         },
-        user
+        user,
       );
       setIsEditOpen(false);
       loadProfile();
@@ -102,16 +102,17 @@ function ProfilePage() {
   };
 
   const handleSelfDisable = async () => {
-    const message = "Warning: Disabling your account will log you out immediately. Proceed?";
+    const message =
+      "Warning: Disabling your account will log you out immediately. Proceed?";
 
     if (window.confirm(message)) {
       try {
         const res = await authFetch(
-          "http://localhost:5000/api/students/disable-account",
+          `${process.env.REACT_APP_API_URL}/students/disable-account`,
           {
             method: "POST",
           },
-          user
+          user,
         );
         if (res.success) {
           await logoutAndRedirect();
@@ -134,7 +135,10 @@ function ProfilePage() {
   const currentLevel = gamification?.level || 1;
   const currentLevelProgress = points;
 
-  const displayBio = profileData.bio || ROLE_DESCRIPTIONS[userRole] || ROLE_DESCRIPTIONS["student"];
+  const displayBio =
+    profileData.bio ||
+    ROLE_DESCRIPTIONS[userRole] ||
+    ROLE_DESCRIPTIONS["student"];
 
   return (
     <div className="profile-page">
@@ -162,9 +166,7 @@ function ProfilePage() {
 
           <div className="about-section">
             <h2>About me</h2>
-            <p className="about-placeholder">
-              {displayBio}
-            </p>
+            <p className="about-placeholder">{displayBio}</p>
           </div>
 
           {/* DYNAMIC STATS */}
@@ -223,9 +225,12 @@ function ProfilePage() {
 
               <div
                 className="badges-container"
-                onClick={() => gamification?.badges?.length > 0 && setIsBadgeModalOpen(true)}
+                onClick={() =>
+                  gamification?.badges?.length > 0 && setIsBadgeModalOpen(true)
+                }
                 style={{
-                  cursor: gamification?.badges?.length > 0 ? "pointer" : "default",
+                  cursor:
+                    gamification?.badges?.length > 0 ? "pointer" : "default",
                 }}
               >
                 {gamification?.badges && gamification.badges.length > 0 ? (
@@ -279,12 +284,16 @@ function ProfilePage() {
 
           <div className="action-buttons">
             <button onClick={handleEditClick}>Edit Profile</button>
-            {userRole === "student" && 
+            {userRole === "student" && (
               <div className="action-buttons">
-                <button onClick={() => navigate("/CoursePage")}>My Courses</button>
-              <button id="disable-button" onClick={handleSelfDisable}>Disable Account</button>
+                <button onClick={() => navigate("/CoursePage")}>
+                  My Courses
+                </button>
+                <button id="disable-button" onClick={handleSelfDisable}>
+                  Disable Account
+                </button>
               </div>
-            }
+            )}
           </div>
         </div>
 

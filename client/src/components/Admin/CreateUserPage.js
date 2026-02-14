@@ -19,12 +19,12 @@ function CreateUserPage() {
   const handleCreate = async () => {
     try {
       await authFetch(
-        "http://localhost:5000/api/admin/users",
+        `${process.env.REACT_APP_API_URL}/admin/users`,
         {
           method: "POST",
           body: JSON.stringify(formData),
         },
-        user
+        user,
       );
       alert("Account Created Successfully!");
       navigate("/admin/users");

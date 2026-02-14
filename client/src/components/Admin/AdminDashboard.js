@@ -21,9 +21,9 @@ export default function AdminDashboard({ profile }) {
     const fetchStats = async () => {
       try {
         const res = await authFetch(
-          "http://localhost:5000/api/admin/stats",
+          `${process.env.REACT_APP_API_URL}/admin/stats`,
           {},
-          user
+          user,
         );
 
         if (res.success) {
@@ -50,7 +50,8 @@ export default function AdminDashboard({ profile }) {
           <div>
             <h1>🛡️ Admin Control Panel</h1>
             <p>
-              Logged in as Administrator: <strong>{profile?.firstName || "Admin"}</strong>
+              Logged in as Administrator:{" "}
+              <strong>{profile?.firstName || "Admin"}</strong>
             </p>
           </div>
           <div className="admin-actions">
@@ -60,16 +61,8 @@ export default function AdminDashboard({ profile }) {
             >
               Manage User Accounts
             </button>
-            <button
-              className="admin-action-btn"
-            >
-              System Settings
-            </button>
-            <button
-              className="admin-action-btn"
-            >
-              View Logs
-            </button>
+            <button className="admin-action-btn">System Settings</button>
+            <button className="admin-action-btn">View Logs</button>
           </div>
         </div>
       </div>

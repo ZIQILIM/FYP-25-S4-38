@@ -18,9 +18,9 @@ export default function InstructorDashboard({ profile }) {
     const fetchMyCourses = async () => {
       try {
         const res = await authFetch(
-          "http://localhost:5000/api/instructors/my-courses",
+          `${process.env.REACT_APP_API_URL}/instructors/my-courses`,
           {},
-          user
+          user,
         );
 
         if (res.success) setCourses(res.data || []);
@@ -47,7 +47,7 @@ export default function InstructorDashboard({ profile }) {
     // [UPDATED] Simplified Logic: Just count total number of ratings received
     const totalRatings = courses.reduce(
       (sum, c) => sum + (c.ratingCount || 0),
-      0
+      0,
     );
 
     return { totalCourses, totalStudents, totalRatings };

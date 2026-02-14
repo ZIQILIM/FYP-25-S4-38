@@ -61,9 +61,9 @@ function AssessmentPage() {
     let x = null;
     try {
       const res = await authFetch(
-        "http://localhost:5000/api/students/getcourseassessment",
+        `${process.env.REACT_APP_API_URL}/students/getcourseassessment`,
         { method: "GET" },
-        user
+        user,
       );
       if (res.success) {
         for (let i = 0; i < res.data.length; i++) {
@@ -84,35 +84,32 @@ function AssessmentPage() {
   const checkforprevAttempt = async (cid) => {
     let y = false;
     const res = await authFetch(
-      "http://localhost:5000/api/students/hasdonegradedtest",
+      `${process.env.REACT_APP_API_URL}/students/hasdonegradedtest`,
       { method: "POST", body: JSON.stringify({ assID: assessmentId }) },
-      user
+      user,
     );
     if (res.success) {
       if (res.data.outcome === false) {
-        
       } else {
         y = true;
       }
     }
-    const res2 = await authFetch("http://localhost:5000/api/students/hasdoneandmarked",
+    const res2 = await authFetch(
+      `${process.env.REACT_APP_API_URL}/students/hasdoneandmarked`,
       { method: "POST", body: JSON.stringify({ assID: cid }) },
-      user);
+      user,
+    );
     if (res2.success) {
-      if(res2.data.outcome.results !== undefined)
-      {
-
-        res2.data.outcome.results.forEach(element => {
-          if(element.assessmentId === assessmentId)
-          {
+      if (res2.data.outcome.results !== undefined) {
+        res2.data.outcome.results.forEach((element) => {
+          if (element.assessmentId === assessmentId) {
             y = true;
           }
         });
       }
-      if(y === true){
+      if (y === true) {
         setPAE(true);
-      }
-      else{
+      } else {
         setLoading(false);
       }
     }
@@ -145,7 +142,7 @@ function AssessmentPage() {
         setDisplayTime(
           `${hrs.toString().padStart(2, "0")}:${mins
             .toString()
-            .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
+            .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`,
         );
       } else {
         clearInterval(interval);
@@ -196,7 +193,7 @@ function AssessmentPage() {
     setsentalr(true);
     try {
       await authFetch(
-        "http://localhost:5000/api/students/submitAssessmentAttempt",
+        `${process.env.REACT_APP_API_URL}/students/submitAssessmentAttempt`,
         {
           method: "POST",
           body: JSON.stringify({
@@ -207,7 +204,7 @@ function AssessmentPage() {
             datatobesent: attemptData,
           }),
         },
-        user
+        user,
       );
     } catch (error) {
       console.error("Failed to submit attempt to DB:", error);
@@ -218,7 +215,7 @@ function AssessmentPage() {
     setSendTestToDB(true);
     try {
       await authFetch(
-        "http://localhost:5000/api/students/submittestAttempt",
+        `${process.env.REACT_APP_API_URL}/students/submittestAttempt`,
         {
           method: "POST",
           body: JSON.stringify({
@@ -228,7 +225,7 @@ function AssessmentPage() {
             qnData: attemptData,
           }),
         },
-        user
+        user,
       );
     } catch (error) {
       console.error("Failed to submit attempt to DB:", error);
@@ -238,29 +235,29 @@ function AssessmentPage() {
   function submitAss() {
     let finalAnswers = [...userAnswerArray];
     if (finalAnswers.length === questionIndex) {
-        finalAnswers.push(getAnswer());
+      finalAnswers.push(getAnswer());
     }
-    
+
     let finalTimings = [...elapsedtimeperQn];
     let gh = eTime;
     if (elapsedtimeperQn.length > 0) {
-        for (let x = 0; x < elapsedtimeperQn.length; x++) gh -= finalTimings[x];
+      for (let x = 0; x < elapsedtimeperQn.length; x++) gh -= finalTimings[x];
     }
     finalTimings.push(gh);
-    
+
     setUserAns(finalAnswers);
     setETQ(finalTimings);
-    
+
     if (wholeAssignment.type === "quiz") {
-        setRequiremarking(true);
-        clearInterval(timerInterval);
+      setRequiremarking(true);
+      clearInterval(timerInterval);
     } else {
-        // Format test data with ALL answers
-        formatDataForTest(finalAnswers, finalTimings);
-        setsubmitTest(true);
-        clearInterval(timerInterval);
+      // Format test data with ALL answers
+      formatDataForTest(finalAnswers, finalTimings);
+      setsubmitTest(true);
+      clearInterval(timerInterval);
     }
-}
+  }
 
   function getAnswer() {
     return selectedValue;
@@ -268,20 +265,20 @@ function AssessmentPage() {
 
   function formatDataForTest(answers, timings) {
     const formattedAnswers = answers.map((answer, i) => ({
-        qId: i,
-        timeSpent: timings[i] || 0,
-        selected: answer,
+      qId: i,
+      timeSpent: timings[i] || 0,
+      selected: answer,
     }));
-    
+
     const submissionData = {
-        assessmentId: assessmentId,
-        score: 0,
-        timeTaken: eTotalTime,
-        answers: formattedAnswers, 
+      assessmentId: assessmentId,
+      score: 0,
+      timeTaken: eTotalTime,
+      answers: formattedAnswers,
     };
-    
+
     setAttemptData(submissionData);
-}
+  }
 
   function markAssessment() {
     let totalscore = 0;
@@ -289,7 +286,7 @@ function AssessmentPage() {
       let correct = false;
       if (userAnswerArray[i] === questionList[i].correct.toString()) {
         correct = true;
-        totalscore+= 10;
+        totalscore += 10;
       }
       let singleQnData = {
         qId: i,
@@ -320,7 +317,12 @@ function AssessmentPage() {
     setRD(reviewlist);
   }
 
-  if (sendtoDbalr === false && endassessment === true && attemptData && submitTest === false) {
+  if (
+    sendtoDbalr === false &&
+    endassessment === true &&
+    attemptData &&
+    submitTest === false
+  ) {
     sendtodb(true);
   }
 
@@ -384,66 +386,66 @@ function AssessmentPage() {
   }
 
   // RESULTS STATE
-    if (endassessment) {
+  if (endassessment) {
     return (
-        <div className="assessment-page">
+      <div className="assessment-page">
         <div className="assessment-review">
-            <div className="review-header">
+          <div className="review-header">
             <h1 className="review-title">Assessment Complete!</h1>
             <p className="review-subtitle">{wholeAssignment?.title}</p>
-            </div>
+          </div>
 
-            {wholeAssignment?.type === "quiz" && reviewData && (
+          {wholeAssignment?.type === "quiz" && reviewData && (
             <div className="review-card">
-                {reviewData.map((item, idx) => (
+              {reviewData.map((item, idx) => (
                 <div key={idx} className="review-question">
-                    <div className="review-q-header">
+                  <div className="review-q-header">
                     <span className="review-q-number">{idx + 1}</span>
                     <span className="review-q-text">{item.questionText}</span>
-                    </div>
+                  </div>
 
-                    <div
+                  <div
                     className={`review-answer ${
-                        item.isCorrect ? "correct" : "incorrect"
+                      item.isCorrect ? "correct" : "incorrect"
                     }`}
-                    >
+                  >
                     <span className="review-answer-icon">
-                        {item.isCorrect ? "✓" : "✗"}
+                      {item.isCorrect ? "✓" : "✗"}
                     </span>
                     <span className="review-answer-text">
-                        Your answer: <strong>{item.userAnswer}</strong>
+                      Your answer: <strong>{item.userAnswer}</strong>
                     </span>
-                    </div>
+                  </div>
 
-                    {!item.isCorrect && (
+                  {!item.isCorrect && (
                     <div className="review-correct-answer">
-                        Correct answer: <strong>{item.correctAnswer}</strong>
+                      Correct answer: <strong>{item.correctAnswer}</strong>
                     </div>
-                    )}
+                  )}
                 </div>
-                ))}
+              ))}
             </div>
-            )}
+          )}
 
-            {wholeAssignment?.type === "test" && (
+          {wholeAssignment?.type === "test" && (
             <div className="review-card submitted-card">
-                <h3 className="submitted-title">Submitted for Grading</h3>
-                <p className="submitted-text">
+              <h3 className="submitted-title">Submitted for Grading</h3>
+              <p className="submitted-text">
                 Your instructor will review your answers.
-                </p>
+              </p>
             </div>
-            )}
+          )}
 
-            <div className="review-actions">
+          <div className="review-actions">
             <button className="start-btn" onClick={goBackToCourse}>
-                Back to Courses
+              Back to Courses
             </button>
-            </div>
+          </div>
         </div>
-        </div>
+      </div>
     );
-    }
-  
+  }
+
   if (!startassessment) {
     return (
       <div className="assessment-page">
@@ -454,7 +456,6 @@ function AssessmentPage() {
 
         <div className="assessment-splash">
           <div className="splash-card">
-
             <h1 className="splash-title">{wholeAssignment?.title}</h1>
 
             <span

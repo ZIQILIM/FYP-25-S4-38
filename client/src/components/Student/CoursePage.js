@@ -31,14 +31,18 @@ function CoursePage() {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [selectedCourseGrades, setSCG] = useState([]);
   const [RawselectedCourseGrades, setRSCG] = useState([]);
-  
+
   const [searchVal, setSV] = useState("");
   const [foundCourse, setFC] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
 
   // Datamining States
   const [analysisModalOpen, setAnalysisModalOpen] = useState(false);
-  const [analysisTarget, setAnalysisTarget] = useState({ assessmentId: null, title: "", type: "" });
+  const [analysisTarget, setAnalysisTarget] = useState({
+    assessmentId: null,
+    title: "",
+    type: "",
+  });
 
   const [overallStudentStats, setOverallStudentStats] = useState(null);
 
@@ -46,7 +50,7 @@ function CoursePage() {
   const fetchCourses = async () => {
     try {
       const res = await authFetch(
-        "http://localhost:5000/api/students/courses",
+        `${process.env.REACT_APP_API_URL}/students/courses`,
         {},
         user,
       );
@@ -83,7 +87,7 @@ function CoursePage() {
           // Only fetch if enrolled
           if (selectedCourse.enrolledStudents?.includes(user.uid)) {
             const res = await authFetch(
-              `http://localhost:5000/api/students/course-progress/${selectedCourse.id}`,
+              `${process.env.REACT_APP_API_URL}/students/course-progress/${selectedCourse.id}`,
               {},
               user,
             );
@@ -99,13 +103,14 @@ function CoursePage() {
 
   // Datamining Handlers
   const openAnalysis = (assessmentId, title, type) => {
-      setAnalysisTarget({ assessmentId, title, type });
-      setAnalysisModalOpen(true);
+    setAnalysisTarget({ assessmentId, title, type });
+    setAnalysisModalOpen(true);
   };
 
   const fetchOverallStudentStats = async (courseId) => {
-    try{
-      const res = await authFetch("http://localhost:5000/api/analytics/overall-student-stats",
+    try {
+      const res = await authFetch(
+        `${process.env.REACT_APP_API_URL}/analytics/overall-student-stats`,
         {
           method: "POST",
           body: JSON.stringify({ studentId: user.uid, courseId }),
@@ -113,10 +118,9 @@ function CoursePage() {
         user,
       );
       console.log("Full API Response:", res);
-      if(res.success){
+      if (res.success) {
         setOverallStudentStats(res.data);
-      }
-      else{
+      } else {
         setOverallStudentStats(null);
       }
     } catch (error) {
@@ -131,8 +135,8 @@ function CoursePage() {
     const enrolled = course.enrolledStudents?.includes(user?.uid);
     setSelectedCourse(course);
     getcoursestudentgrade(course.id);
-    
-    if(enrolled){
+
+    if (enrolled) {
       fetchOverallStudentStats(course.id);
     }
     // If enrolled, go to materials. If not, reviews.
@@ -145,13 +149,13 @@ function CoursePage() {
   const getcoursestudentgrade = async (courseID) => {
     let res = null;
     const x = await authFetch(
-      "http://localhost:5000/api/messages/getMsgRecivers",
+      `${process.env.REACT_APP_API_URL}/messages/getMsgRecivers`,
       { method: "GET" },
       user,
     );
     try {
       res = await authFetch(
-        `http://localhost:5000/api/students/getgradesbycid/${courseID}`,
+        `${process.env.REACT_APP_API_URL}/students/getgradesbycid/${courseID}`,
         { method: "GET" },
         user,
       );
@@ -201,7 +205,7 @@ function CoursePage() {
 
     try {
       const res = await authFetch(
-        "http://localhost:5000/api/students/enroll",
+        `${process.env.REACT_APP_API_URL}/students/enroll`,
         {
           method: "POST",
           body: JSON.stringify({ courseId: selectedCourse.id }),
@@ -235,7 +239,7 @@ function CoursePage() {
       // 2. API Call in Background
       try {
         await authFetch(
-          "http://localhost:5000/api/students/mark-viewed",
+          `${process.env.REACT_APP_API_URL}/students/mark-viewed`,
           {
             method: "POST",
             body: JSON.stringify({ courseId: selectedCourse.id, contentId }),
@@ -261,7 +265,7 @@ function CoursePage() {
     setReviewSubmitting(true);
     try {
       await authFetch(
-        "http://localhost:5000/api/students/review",
+        `${process.env.REACT_APP_API_URL}/students/review`,
         {
           method: "POST",
           body: JSON.stringify({
@@ -282,9 +286,9 @@ function CoursePage() {
     }
   };
 
-  const updateSearchValue= (event) => {
-    setSV(event.target.value)
-  }
+  const updateSearchValue = (event) => {
+    setSV(event.target.value);
+  };
 
   // --- Sort Courses (Enrolled First) ---
   const sortedCourses = [...courses].sort((a, b) => {
@@ -293,11 +297,11 @@ function CoursePage() {
     return isEnrolledB - isEnrolledA;
   });
 
-  function executeSearch(){
+  function executeSearch() {
     setFC([]);
     setIsSearching(true);
-    courses.forEach(element => {
-      if(element.title=== searchVal){
+    courses.forEach((element) => {
+      if (element.title === searchVal) {
         let temp = foundCourse;
         temp.push(element);
         setFC(temp);
@@ -305,7 +309,7 @@ function CoursePage() {
     });
   }
 
-  function ResetSearch(){
+  function ResetSearch() {
     setIsSearching(false);
     setFC([]);
   }
@@ -319,18 +323,16 @@ function CoursePage() {
       <p>Explore and enroll in courses to boost your skills.</p>
 
       <div>
-        <input placeholder= {"Search by Name"} onChange={updateSearchValue}/>
+        <input placeholder={"Search by Name"} onChange={updateSearchValue} />
         <button onClick={executeSearch}>Search</button>
-        {
-          isSearching === true && (
-            <button onClick={ResetSearch}>Clear Search</button>
-          )
-        }
+        {isSearching === true && (
+          <button onClick={ResetSearch}>Clear Search</button>
+        )}
       </div>
 
       <div>
         {isSearching === false ? (
-            <div className="courses-grid">
+          <div className="courses-grid">
             {sortedCourses.map((course, index) => {
               const isEnrolled = course.enrolledStudents?.includes(user.uid);
               const isLocked = course.isLocked; //flag from server
@@ -362,7 +364,7 @@ function CoursePage() {
                     }}
                   >
                     {isLocked ? "🔒" : course.title.charAt(0).toUpperCase()}
-    
+
                     {/* LEVEL BADGE */}
                     <span
                       style={{
@@ -416,10 +418,10 @@ function CoursePage() {
                 </div>
               );
             })}
-            </div>
-          ) : (
-            <div className="courses-grid">
-              {foundCourse.map((course, index) => {
+          </div>
+        ) : (
+          <div className="courses-grid">
+            {foundCourse.map((course, index) => {
               const isEnrolled = course.enrolledStudents?.includes(user.uid);
               const isLocked = course.isLocked; //flag from server
               return (
@@ -450,7 +452,7 @@ function CoursePage() {
                     }}
                   >
                     {isLocked ? "🔒" : course.title.charAt(0).toUpperCase()}
-    
+
                     {/* LEVEL BADGE */}
                     <span
                       style={{
@@ -504,9 +506,8 @@ function CoursePage() {
                 </div>
               );
             })}
-            </div>
-          )
-        }
+          </div>
+        )}
       </div>
 
       {isModalOpen && selectedCourse && (
@@ -745,159 +746,253 @@ function CoursePage() {
               {/* === ASSESSMENTS TAB === */}
               {activeTab === "assessments" && (
                 <>
-                   {!selectedCourse.enrolledStudents?.includes(user.uid)? (
+                  {!selectedCourse.enrolledStudents?.includes(user.uid) ? (
                     <p className="locked-text">Enroll to unlock assessments.</p>
-                   ):(
+                  ) : (
                     <>
-                    {overallStudentStats && (
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-around',
-                        backgroundColor: '#f8f9fa',
-                        padding: '15px',
-                        borderRadius: '10px',
-                        marginBottom: '20px',
-                        border: '1px solid #e9ecef'
-                      }}>
-                        <div style={{ textAlign: 'center' }}>
-                          <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>COURSE AVG</p>
-                          {/* Accessing keys from the 'data' returned by Node */}
-                          <p style={{ margin: 0, fontWeight: 'bold', color: '#6c5ce7' }}>
-                            {overallStudentStats.avg_score}%
-                          </p>
-                        </div>
-                        
-                        <div style={{ textAlign: 'center', borderLeft: '1px solid #ddd', borderRight: '1px solid #ddd', padding: '0 20px' }}>
-                          <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>CONSISTENCY (P25-P75)</p>
-                          <p style={{ margin: 0, fontWeight: 'bold' }}>
-                            {overallStudentStats.p25_score}% - {overallStudentStats.p75_score}%
-                          </p>
-                        </div>
+                      {overallStudentStats && (
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-around",
+                            backgroundColor: "#f8f9fa",
+                            padding: "15px",
+                            borderRadius: "10px",
+                            marginBottom: "20px",
+                            border: "1px solid #e9ecef",
+                          }}
+                        >
+                          <div style={{ textAlign: "center" }}>
+                            <p
+                              style={{
+                                margin: 0,
+                                fontSize: "12px",
+                                color: "#666",
+                              }}
+                            >
+                              COURSE AVG
+                            </p>
+                            {/* Accessing keys from the 'data' returned by Node */}
+                            <p
+                              style={{
+                                margin: 0,
+                                fontWeight: "bold",
+                                color: "#6c5ce7",
+                              }}
+                            >
+                              {overallStudentStats.avg_score}%
+                            </p>
+                          </div>
 
-                        <div style={{ textAlign: 'center' }}>
-                          <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>PERSONAL BEST</p>
-                          <p style={{ margin: 0, fontWeight: 'bold', color: '#4cd137' }}>
-                            {overallStudentStats.highest_score}%
-                          </p>
+                          <div
+                            style={{
+                              textAlign: "center",
+                              borderLeft: "1px solid #ddd",
+                              borderRight: "1px solid #ddd",
+                              padding: "0 20px",
+                            }}
+                          >
+                            <p
+                              style={{
+                                margin: 0,
+                                fontSize: "12px",
+                                color: "#666",
+                              }}
+                            >
+                              CONSISTENCY (P25-P75)
+                            </p>
+                            <p style={{ margin: 0, fontWeight: "bold" }}>
+                              {overallStudentStats.p25_score}% -{" "}
+                              {overallStudentStats.p75_score}%
+                            </p>
+                          </div>
+
+                          <div style={{ textAlign: "center" }}>
+                            <p
+                              style={{
+                                margin: 0,
+                                fontSize: "12px",
+                                color: "#666",
+                              }}
+                            >
+                              PERSONAL BEST
+                            </p>
+                            <p
+                              style={{
+                                margin: 0,
+                                fontWeight: "bold",
+                                color: "#4cd137",
+                              }}
+                            >
+                              {overallStudentStats.highest_score}%
+                            </p>
+                          </div>
                         </div>
+                      )}
+                      {/* SECTION 1: QUIZZES */}
+                      <h3>Daily Quizzes</h3>
+                      <div className="file-list student-file-list">
+                        {selectedCourse.content
+                          ?.filter((f) => f.type === "quiz")
+                          .map((file) => (
+                            <div key={file.id} className="file-item">
+                              <p>📝 {file.title}</p>
+
+                              <button
+                                onClick={() =>
+                                  handleContentClick(file.id, "quiz")
+                                }
+                              >
+                                Start
+                              </button>
+                              <button
+                                onClick={() =>
+                                  openAnalysis(file.id, file.title, "quiz")
+                                }
+                                style={{
+                                  backgroundColor: "#6c5ce7",
+                                  color: "white",
+                                  border: "none",
+                                  padding: "5px 10px",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                  marginLeft: "10px",
+                                }}
+                              >
+                                📊 Analysis
+                              </button>
+                            </div>
+                          ))}
                       </div>
-                    )}
-                    {/* SECTION 1: QUIZZES */}
-                    <h3>Daily Quizzes</h3>
-                    <div className="file-list student-file-list">
-                        {selectedCourse.content?.filter(f => f.type === "quiz").map((file) => (
+
+                      {/* SECTION 2: WEIGHTED TESTS */}
+                      <h3>Weighted Tests</h3>
+                      <div className="file-list student-file-list">
+                        {selectedCourse.content
+                          ?.filter(
+                            (f) => f.type === "test" || f.type === "weighted",
+                          )
+                          .map((file) => (
                             <div key={file.id} className="file-item">
-                                <p>📝 {file.title}</p>
-
-                                    <button onClick={() => handleContentClick(file.id, "quiz")}>Start</button>
-                                    <button onClick={() => openAnalysis(file.id, file.title, "quiz")} style={{ backgroundColor: '#6c5ce7', 
-                                        color: 'white',
-                                        border: 'none',
-                                        padding: '5px 10px',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
-                                        marginLeft: '10px'
-                                    }}>
-                                          📊 Analysis
-                                    </button>
-
+                              <p>🏆 {file.title}</p>
+                              <button
+                                onClick={() =>
+                                  handleContentClick(file.id, "test")
+                                }
+                              >
+                                Start Test
+                              </button>
+                              <button
+                                onClick={() =>
+                                  openAnalysis(file.id, file.title, "test")
+                                }
+                                style={{
+                                  backgroundColor: "#6c5ce7",
+                                  color: "white",
+                                  border: "none",
+                                  padding: "5px 10px",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                  marginLeft: "10px",
+                                }}
+                              >
+                                📊 Analysis
+                              </button>
                             </div>
-                        ))}
-                    </div>
-
-                    {/* SECTION 2: WEIGHTED TESTS */}
-                    <h3>Weighted Tests</h3>
-                    <div className="file-list student-file-list">
-                        {selectedCourse.content?.filter(f => f.type === "test" || f.type === "weighted").map((file) => (
-                            <div key={file.id} className="file-item">
-                                <p>🏆 {file.title}</p>
-                                    <button onClick={() => handleContentClick(file.id, "test")}>Start Test</button>
-                                    <button onClick={() => openAnalysis(file.id, file.title, "test")} style={{ backgroundColor: '#6c5ce7', 
-                                        color: 'white',
-                                        border: 'none',
-                                        padding: '5px 10px',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
-                                        marginLeft: '10px'
-                                    }}>
-                                          📊 Analysis
-                                    </button>
-                            </div>
-                        ))}
-                    </div>
+                          ))}
+                      </div>
                     </>
-                   )}
+                  )}
                 </>
               )}
 
-                {/* === LEADERBOARD TAB === */}
-                {activeTab === "leaderboard" && (
-                  <div className="leaderboard-container">
-                    <h3>Leaderboard</h3>
-                    {!selectedCourse.enrolledStudents?.includes(user.uid)?(
-                      <p className="locked-text">Enroll to unlock the leaderboard.</p>
-                    ):(
+              {/* === LEADERBOARD TAB === */}
+              {activeTab === "leaderboard" && (
+                <div className="leaderboard-container">
+                  <h3>Leaderboard</h3>
+                  {!selectedCourse.enrolledStudents?.includes(user.uid) ? (
+                    <p className="locked-text">
+                      Enroll to unlock the leaderboard.
+                    </p>
+                  ) : (
                     <>
-                    {selectedCourseGrades.length === 0 ? (
-                      <div className="leaderboard-empty">
-                        <p style={{ fontSize: "48px", margin: "0 0 10px 0" }}>🏆</p>
-                        <p style={{ fontSize: "16px", fontWeight: "600", color: "#666" }}>
-                          No scores yet
-                        </p>
-                        <p style={{ fontSize: "14px", color: "#999" }}>
-                          Complete assessments to appear on the leaderboard!
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="leaderboard-list">
-                        {selectedCourseGrades.map((leaderboard, index) => {
-                          const rank = index + 1;
-                          const isCurrentUser = leaderboard.s_name === user?.displayName;
-                          
-                          // Determine rank class
-                          let rankClass = "rank-other";
-                          if (rank === 1) rankClass = "rank-1";
-                          else if (rank === 2) rankClass = "rank-2";
-                          else if (rank === 3) rankClass = "rank-3";
-                          
-                          // Medal for top 3
-                          let medal = "";
-                          if (rank === 1) medal = "🥇";
-                          else if (rank === 2) medal = "🥈";
-                          else if (rank === 3) medal = "🥉";
-                          
-                          return (
-                            <div 
-                              key={index} 
-                              className={`leaderboard-item ${isCurrentUser ? "current-user" : ""}`}
-                            >
-                              <div className={`leaderboard-rank ${rankClass}`}>
-                                {rank}
+                      {selectedCourseGrades.length === 0 ? (
+                        <div className="leaderboard-empty">
+                          <p style={{ fontSize: "48px", margin: "0 0 10px 0" }}>
+                            🏆
+                          </p>
+                          <p
+                            style={{
+                              fontSize: "16px",
+                              fontWeight: "600",
+                              color: "#666",
+                            }}
+                          >
+                            No scores yet
+                          </p>
+                          <p style={{ fontSize: "14px", color: "#999" }}>
+                            Complete assessments to appear on the leaderboard!
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="leaderboard-list">
+                          {selectedCourseGrades.map((leaderboard, index) => {
+                            const rank = index + 1;
+                            const isCurrentUser =
+                              leaderboard.s_name === user?.displayName;
+
+                            // Determine rank class
+                            let rankClass = "rank-other";
+                            if (rank === 1) rankClass = "rank-1";
+                            else if (rank === 2) rankClass = "rank-2";
+                            else if (rank === 3) rankClass = "rank-3";
+
+                            // Medal for top 3
+                            let medal = "";
+                            if (rank === 1) medal = "🥇";
+                            else if (rank === 2) medal = "🥈";
+                            else if (rank === 3) medal = "🥉";
+
+                            return (
+                              <div
+                                key={index}
+                                className={`leaderboard-item ${isCurrentUser ? "current-user" : ""}`}
+                              >
+                                <div
+                                  className={`leaderboard-rank ${rankClass}`}
+                                >
+                                  {rank}
+                                </div>
+
+                                <div className="leaderboard-student-info">
+                                  <p className="leaderboard-student-name">
+                                    {medal && (
+                                      <span className="rank-medal">
+                                        {medal}
+                                      </span>
+                                    )}
+                                    {leaderboard.s_name}
+                                    {isCurrentUser && " (You)"}
+                                  </p>
+                                </div>
+
+                                <div className="leaderboard-score">
+                                  <span className="leaderboard-score-value">
+                                    {leaderboard.LboardScore.toFixed(1)}
+                                  </span>
+                                  <span className="leaderboard-score-label">
+                                    Points
+                                  </span>
+                                </div>
                               </div>
-                              
-                              <div className="leaderboard-student-info">
-                                <p className="leaderboard-student-name">
-                                  {medal && <span className="rank-medal">{medal}</span>}
-                                  {leaderboard.s_name}
-                                  {isCurrentUser && " (You)"}
-                                </p>
-                              </div>
-                              
-                              <div className="leaderboard-score">
-                                <span className="leaderboard-score-value">
-                                  {leaderboard.LboardScore.toFixed(1)}
-                                </span>
-                                <span className="leaderboard-score-label">Points</span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                            );
+                          })}
+                        </div>
+                      )}
                     </>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
+              )}
             </div>
 
             {/* FOOTER */}
@@ -927,26 +1022,35 @@ function CoursePage() {
       )}
       {analysisModalOpen && (
         <div className="modal-overlay" style={{ zIndex: 2000 }}>
-          <div className="course-modal-box" style={{ maxWidth: '450px', textAlign: 'center' }}>
+          <div
+            className="course-modal-box"
+            style={{ maxWidth: "450px", textAlign: "center" }}
+          >
             <div className="course-modal-header">
               <h2>Performance Analysis</h2>
-              <p style={{ color: '#666' }}>{analysisTarget.title}</p>
+              <p style={{ color: "#666" }}>{analysisTarget.title}</p>
             </div>
-            
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '20px 0' }}>
-              <RiskPredictor 
-                courseId={selectedCourse.id} 
-                assessmentId={analysisTarget.assessmentId} 
-                studentId={user.uid} 
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                padding: "20px 0",
+              }}
+            >
+              <RiskPredictor
+                courseId={selectedCourse.id}
+                assessmentId={analysisTarget.assessmentId}
+                studentId={user.uid}
                 type={analysisTarget.type}
               />
             </div>
 
             <div className="course-modal-footer">
-              <button 
-                className="modal-btn" 
+              <button
+                className="modal-btn"
                 onClick={() => setAnalysisModalOpen(false)}
-                style={{ width: '100%' }}
+                style={{ width: "100%" }}
               >
                 Close Analysis
               </button>
